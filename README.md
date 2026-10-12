@@ -130,3 +130,9 @@ Yayın (release) derlemesi için proje kökünde bir `keystore.properties` dosya
 
 © 2026 Alteration Studio. Tüm hakları saklıdır.
 Kod incelemek için açıktır; izinsiz kopyalanamaz, dağıtılamaz ya da ticari olarak kullanılamaz.
+
+
+## Geliştiriciler
+Hamza Bilici - Emel Ece Gizli
+
+
