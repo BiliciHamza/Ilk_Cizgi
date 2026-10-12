@@ -19,6 +19,23 @@ Telefonunu kâğıdın üstüne sabitle, ekrandaki kılavuzu takip ederek çiz.
 
 ---
 
+## Ekran görüntüleri
+
+<table>
+  <tr>
+    <td align="center"><img src="docs/ekran-goruntuleri/cizim-ekrani.jpg" width="200" alt="Çizim ekranı"><br><sub><b>Çizim ekranı</b><br>Kamera üstünde kılavuz</sub></td>
+    <td align="center"><img src="docs/ekran-goruntuleri/cizmeyi-ogren.jpg" width="200" alt="Çizmeyi öğren"><br><sub><b>Çizmeyi öğren</b><br>18 adım adım ders</sub></td>
+    <td align="center"><img src="docs/ekran-goruntuleri/arama.jpg" width="200" alt="Arama ve filtre"><br><sub><b>Arama ve filtre</b><br>Kategoriye göre süz</sub></td>
+    <td align="center"><img src="docs/ekran-goruntuleri/kisayollar.jpg" width="200" alt="Kısayollar"><br><sub><b>Kısayollar</b><br>Son açılanlar, favoriler</sub></td>
+  </tr>
+  <tr>
+    <td align="center"><img src="docs/ekran-goruntuleri/fotograftan-ciz.jpg" width="200" alt="Fotoğraftan çiz"><br><sub><b>Fotoğraftan çiz</b><br>Galeriden ya da kamerayla</sub></td>
+    <td align="center"><img src="docs/ekran-goruntuleri/cizimlerim.jpg" width="200" alt="Çizimlerim"><br><sub><b>Çizimlerim</b><br>Video ve fotoğraflar</sub></td>
+    <td align="center"><img src="docs/ekran-goruntuleri/ayarlar.jpg" width="200" alt="Ayarlar"><br><sub><b>Ayarlar</b><br>Dil ve tema</sub></td>
+    <td align="center"><img src="docs/ekran-goruntuleri/varsayilan-ayarlar.jpg" width="200" alt="Varsayılan ayarlar"><br><sub><b>Varsayılan ayarlar</b><br>Her çizim böyle açılır</sub></td>
+  </tr>
+</table>
+
 ## Nasıl çalışır?
 
 1. **Bir çizim seç.** Kategorilerden, adım adım derslerden ya da kendi fotoğrafından.
