@@ -1,0 +1,38 @@
+# ── Gizli: yayın imzası (asla GitHub'a gitmemeli) ──
+keystore.properties
+/imza/
+*.jks
+*.keystore
+
+# ── Bilgisayara özel ayarlar ──
+local.properties
+# Android Studio ayarları (kişisel yollar ve cihaz kimlikleri içerir; Android Studio yeniden oluşturur)
+/.idea/
+*.iml
+
+# ── Derleme çıktıları ve önbellekler ──
+.gradle/
+.kotlin/
+/build/
+/app/build/
+/captures/
+.externalNativeBuild/
+.cxx/
+
+# ── Derlenmiş paketler (APK / AAB) ──
+/app/release/
+/app/debug/
+*.apk
+*.aab
+*.ap_
+*.dex
+
+# ── Yedekler ve geçici dosyalar ──
+/_yedek/
+*.log
+*.tmp
+
+# ── İşletim sistemi dosyaları ──
+.DS_Store
+Thumbs.db
+desktop.ini

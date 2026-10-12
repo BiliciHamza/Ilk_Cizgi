@@ -1,0 +1,14 @@
+# Satır sonları: depoda LF olarak saklanır, Windows'ta Git kendisi çevirir
+* text=auto
+
+# Windows komut dosyaları CRLF, Unix komut dosyaları LF kalmalı
+*.bat text eol=crlf
+gradlew text eol=lf
+
+# İkili dosyalar: asla değiştirilmez
+*.webp binary
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.jar binary
+*.jks binary

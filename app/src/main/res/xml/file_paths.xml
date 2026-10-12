@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- FileProvider ile paylaşılabilen klasörler -->
+<paths>
+    <files-path name="dosyalar" path="." />
+    <cache-path name="gecici" path="." />
+    <external-files-path name="dis" path="." />
+</paths>

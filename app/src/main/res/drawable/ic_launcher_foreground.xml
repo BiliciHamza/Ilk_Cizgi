@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- İlk Çizgi logosu: kâğıt çerçevesi içinde mavi kılavuz çizginin üstünden geçen kalem -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <path android:pathData="M30,42 V30 H42" android:strokeColor="#7CC6E8" android:strokeWidth="4" android:strokeLineCap="round" android:strokeLineJoin="round"/>
+    <path android:pathData="M66,30 H78 V42" android:strokeColor="#7CC6E8" android:strokeWidth="4" android:strokeLineCap="round" android:strokeLineJoin="round"/>
+    <path android:pathData="M78,66 V78 H66" android:strokeColor="#7CC6E8" android:strokeWidth="4" android:strokeLineCap="round" android:strokeLineJoin="round"/>
+    <path android:pathData="M42,78 H30 V66" android:strokeColor="#7CC6E8" android:strokeWidth="4" android:strokeLineCap="round" android:strokeLineJoin="round"/>
+    <path android:pathData="M34,66 C42,52 50,52 54,58 S66,66 74,48" android:strokeColor="#7CC6E8" android:strokeAlpha="0.45" android:strokeWidth="3.5" android:strokeLineCap="round"/>
+    <path android:pathData="M34,66 C42,52 50,52 54,58" android:strokeColor="#F3F4F0" android:strokeWidth="3.5" android:strokeLineCap="round"/>
+    <path android:pathData="M56.12,50.22 L61.78,55.88 L70.97,46.69 L65.31,41.03 Z" android:fillColor="#F3F4F0"/>
+    <path android:pathData="M65.31,41.03 L70.97,46.69 L73.80,43.86 L68.14,38.20 Z" android:fillColor="#7CC6E8"/>
+    <path android:pathData="M54,58 L61.78,55.88 L56.12,50.22 Z" android:fillColor="#E6C49A"/>
+    <path android:pathData="M54,58 L57.32,57.08 L54.92,54.68 Z" android:fillColor="#3A4049"/>
+</vector>

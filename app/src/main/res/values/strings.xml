@@ -1,0 +1,8 @@
+<resources>
+    <!-- Telefonun ana ekranında simgenin altında görünen ad -->
+    <string name="app_name">İlk Çizgi</string>
+    <!-- Mağazadaki tam ad -->
+    <string name="app_full_name">İlk Çizgi: Çizmeyi Öğren</string>
+    <!-- Geliştirici / marka -->
+    <string name="brand_name">Alteration Studio</string>
+</resources>

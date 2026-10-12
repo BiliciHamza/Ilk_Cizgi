@@ -1,0 +1,461 @@
+{
+  "_aciklama": "Kategori ve çizim adları. ad = Türkçe, ad_en = İngilizce, renk = kategori rengi. Yeni klasör eklersen burada yazmasan da görünür.",
+  "kategoriler": [
+    {
+      "klasor": "geometrik",
+      "ad": "Kolay çizimler",
+      "ad_en": "Easy drawings",
+      "renk": "#7CC6E8",
+      "alt": [
+        {
+          "klasor": "iki_boyutlu",
+          "ad": "2B şekiller",
+          "ad_en": "2D shapes"
+        },
+        {
+          "klasor": "uc_boyutlu",
+          "ad": "3B şekiller",
+          "ad_en": "3D shapes"
+        }
+      ]
+    },
+    {
+      "klasor": "anatomi",
+      "ad": "İnsan",
+      "alt": [
+        {
+          "klasor": "eller",
+          "ad": "Eller",
+          "ad_en": "Hands"
+        },
+        {
+          "klasor": "gozler",
+          "ad": "Gözler",
+          "ad_en": "Eyes"
+        },
+        {
+          "klasor": "burunlar",
+          "ad": "Burunlar",
+          "ad_en": "Noses"
+        },
+        {
+          "klasor": "dudaklar",
+          "ad": "Dudaklar",
+          "ad_en": "Lips"
+        },
+        {
+          "klasor": "yuzler",
+          "ad": "Yüzler",
+          "ad_en": "Faces"
+        },
+        {
+          "klasor": "portreler",
+          "ad": "Portreler",
+          "ad_en": "Portraits"
+        },
+        {
+          "klasor": "iskelet",
+          "ad": "İskelet",
+          "ad_en": "Skeleton"
+        }
+      ],
+      "ad_en": "Human",
+      "renk": "#FF8FB1"
+    },
+    {
+      "klasor": "hayvanlar",
+      "ad": "Hayvanlar",
+      "ad_en": "Animals",
+      "renk": "#6FD3A0"
+    },
+    {
+      "klasor": "bitkiler",
+      "ad": "Bitkiler",
+      "ad_en": "Plants",
+      "renk": "#A6D86B"
+    },
+    {
+      "klasor": "manzara",
+      "ad": "Manzara",
+      "ad_en": "Landscapes",
+      "renk": "#F2B36B"
+    },
+    {
+      "klasor": "fantastik",
+      "ad": "Fantastik",
+      "ad_en": "Fantasy",
+      "renk": "#B59CFF"
+    },
+    {
+      "klasor": "karakterler",
+      "ad": "Karakterler",
+      "ad_en": "Characters",
+      "renk": "#FFCC4D"
+    },
+    {
+      "klasor": "dovme",
+      "ad": "Karanlık",
+      "ad_en": "Dark",
+      "renk": "#8C93A8"
+    }
+  ],
+  "adlar": {
+    "akrep": "Akrep",
+    "alevli_kafatasi": "Alevli kafatası",
+    "altigen": "Altıgen",
+    "animasyon_karakteri": "Animasyon karakteri",
+    "anime_erkek": "Anime erkek",
+    "anime_kiz": "Anime kız",
+    "anime_ninja": "Anime ninja",
+    "antik_savasci": "Antik savaşçı",
+    "aycicegi": "Ayçiçeği",
+    "besgen": "Beşgen",
+    "burun": "Burun · adım",
+    "canavar_kedi": "Canavar kedi",
+    "dag_manzarasi": "Dağ manzarası",
+    "daire": "Daire",
+    "deniz_feneri": "Deniz feneri",
+    "deniz_kaplumbagasi": "Deniz kaplumbağası",
+    "dudak_1_adim": "Dudak 1 · adım",
+    "dudak_2_adim": "Dudak 2 · adım",
+    "dudak_3_adim": "Dudak 3 · adım",
+    "ejderha": "Ejderha",
+    "ejderha_gozu": "Ejderha gözü",
+    "el_1_adim": "El çizimi 1 · adım",
+    "el_2_adim": "El çizimi 2 · adım",
+    "el_3_adim": "El çizimi 3 · adım",
+    "el_iskeleti": "El iskeleti",
+    "elips": "Elips",
+    "erkek_yuzu": "Erkek yüzü · adım",
+    "fanus_gul": "Fanustaki gül",
+    "futbolcu_portresi": "Futbolcu portresi · adım",
+    "geyik": "Geyik",
+    "goz": "Göz",
+    "goz_capraz": "Çapraz açıdan göz · adım",
+    "goz_onden": "Önden göz · adım",
+    "goz_yandan": "Yandan göz · adım",
+    "gul": "Gül",
+    "husky": "Husky",
+    "insan_iskeleti": "İnsan iskeleti",
+    "kare": "Kare",
+    "kedi": "Kedi",
+    "kiz_yuzu": "Kız yüzü · adım",
+    "koni_adim": "Koni · adım",
+    "kopekbaligi": "Köpekbalığı",
+    "korku_maskesi": "Korku maskesi",
+    "kukuletali_iskelet": "Kukuletalı iskelet",
+    "kup_adim": "Küp · adım",
+    "kure_adim": "Küre · adım",
+    "kurt": "Kurt",
+    "mizrakli_sovalye": "Mızraklı şövalye",
+    "monstera": "Monstera",
+    "orumcek": "Örümcek",
+    "orumcek_agi": "Örümcek ağı",
+    "pelerinli_sovalye": "Pelerinli şövalye",
+    "piramit_adim": "Piramit · adım",
+    "savasci_melek": "Savaşçı melek",
+    "silindir_adim": "Silindir · adım",
+    "sovalye": "Şövalye",
+    "super_kahraman": "Süper kahraman",
+    "ucgen": "Üçgen",
+    "yarasa": "Yarasa",
+    "yasli_agac": "Yaşlı ağaç",
+    "yavru_fil": "Yavru fil",
+    "yavru_kaplan": "Yavru kaplan",
+    "yavru_kedi": "Yavru kedi",
+    "yildiz": "Yıldız",
+    "yuz_duzlemleri": "Yüz düzlemleri",
+    "zurafa": "Zürafa"
+  },
+  "adlar_en": {
+    "akrep": "Scorpion",
+    "alevli_kafatasi": "Flaming skull",
+    "altigen": "Hexagon",
+    "animasyon_karakteri": "Cartoon character",
+    "anime_erkek": "Anime boy",
+    "anime_kiz": "Anime girl",
+    "anime_ninja": "Anime ninja",
+    "antik_savasci": "Ancient warrior",
+    "aycicegi": "Sunflower",
+    "besgen": "Pentagon",
+    "burun": "Nose · step",
+    "canavar_kedi": "Monster cat",
+    "dag_manzarasi": "Mountain view",
+    "daire": "Circle",
+    "deniz_feneri": "Lighthouse",
+    "deniz_kaplumbagasi": "Sea turtle",
+    "dudak_1_adim": "Lips 1 · step",
+    "dudak_2_adim": "Lips 2 · step",
+    "dudak_3_adim": "Lips 3 · step",
+    "ejderha": "Dragon",
+    "ejderha_gozu": "Dragon eye",
+    "el_1_adim": "Hand drawing 1 · step",
+    "el_2_adim": "Hand drawing 2 · step",
+    "el_3_adim": "Hand drawing 3 · step",
+    "el_iskeleti": "Hand skeleton",
+    "elips": "Ellipse",
+    "erkek_yuzu": "Male face · step",
+    "fanus_gul": "Rose under glass",
+    "futbolcu_portresi": "Footballer portrait · step",
+    "geyik": "Deer",
+    "goz": "Eye",
+    "goz_capraz": "Eye, angled view · step",
+    "goz_onden": "Eye, front view · step",
+    "goz_yandan": "Eye, side view · step",
+    "gul": "Rose",
+    "husky": "Husky",
+    "insan_iskeleti": "Human skeleton",
+    "kare": "Square",
+    "kedi": "Cat",
+    "kiz_yuzu": "Female face · step",
+    "koni_adim": "Cone · step",
+    "kopekbaligi": "Shark",
+    "korku_maskesi": "Horror mask",
+    "kukuletali_iskelet": "Hooded skeleton",
+    "kup_adim": "Cube · step",
+    "kure_adim": "Sphere · step",
+    "kurt": "Wolf",
+    "mizrakli_sovalye": "Knight with spear",
+    "monstera": "Monstera",
+    "orumcek": "Spider",
+    "orumcek_agi": "Spider web",
+    "pelerinli_sovalye": "Caped knight",
+    "piramit_adim": "Pyramid · step",
+    "savasci_melek": "Warrior angel",
+    "silindir_adim": "Cylinder · step",
+    "sovalye": "Knight",
+    "super_kahraman": "Superhero",
+    "ucgen": "Triangle",
+    "yarasa": "Bat",
+    "yasli_agac": "Old tree",
+    "yavru_fil": "Baby elephant",
+    "yavru_kaplan": "Tiger cub",
+    "yavru_kedi": "Kitten",
+    "yildiz": "Star",
+    "yuz_duzlemleri": "Head planes",
+    "zurafa": "Giraffe"
+  },
+  "_dersler_aciklama": "Çizmeyi öğren dersleri. Her ders sırayla çizilen adımlardan oluşur. Yeni ders eklemek için adimlar listesine dosya yollarını sırayla yazman yeterli, ör. \"adimlar\": [\"anatomi/gozler/goz_1.webp\", \"anatomi/gozler/goz_2.webp\"]. Adım resimleri aynı boyutta olursa üst üste tam oturur. oran = resmin yüksekliği / genişliği.",
+  "dersler": [
+    {
+      "id": "geo_kup",
+      "ad": "Küp",
+      "ad_en": "Cube",
+      "renk": "#7CC6E8",
+      "oran": 1.0,
+      "adimlar": [
+        "geometrik/uc_boyutlu/kup_adim_1.webp",
+        "geometrik/uc_boyutlu/kup_adim_2.webp",
+        "geometrik/uc_boyutlu/kup_adim_3.webp"
+      ]
+    },
+    {
+      "id": "geo_silindir",
+      "ad": "Silindir",
+      "ad_en": "Cylinder",
+      "renk": "#7CC6E8",
+      "oran": 1.0,
+      "adimlar": [
+        "geometrik/uc_boyutlu/silindir_adim_1.webp",
+        "geometrik/uc_boyutlu/silindir_adim_2.webp",
+        "geometrik/uc_boyutlu/silindir_adim_3.webp"
+      ]
+    },
+    {
+      "id": "geo_koni",
+      "ad": "Koni",
+      "ad_en": "Cone",
+      "renk": "#7CC6E8",
+      "oran": 1.0,
+      "adimlar": [
+        "geometrik/uc_boyutlu/koni_adim_1.webp",
+        "geometrik/uc_boyutlu/koni_adim_2.webp",
+        "geometrik/uc_boyutlu/koni_adim_3.webp"
+      ]
+    },
+    {
+      "id": "geo_kure",
+      "ad": "Küre",
+      "ad_en": "Sphere",
+      "renk": "#7CC6E8",
+      "oran": 1.0,
+      "adimlar": [
+        "geometrik/uc_boyutlu/kure_adim_1.webp",
+        "geometrik/uc_boyutlu/kure_adim_2.webp",
+        "geometrik/uc_boyutlu/kure_adim_3.webp"
+      ]
+    },
+    {
+      "id": "geo_piramit",
+      "ad": "Piramit",
+      "ad_en": "Pyramid",
+      "renk": "#7CC6E8",
+      "oran": 1.0,
+      "adimlar": [
+        "geometrik/uc_boyutlu/piramit_adim_1.webp",
+        "geometrik/uc_boyutlu/piramit_adim_2.webp",
+        "geometrik/uc_boyutlu/piramit_adim_3.webp"
+      ]
+    },
+    {
+      "id": "el_cizimi_1",
+      "ad": "El çizimi 1",
+      "ad_en": "Hand drawing 1",
+      "renk": "#FF8FB1",
+      "oran": 1.7699,
+      "adimlar": [
+        "anatomi/eller/el_1_adim_1.webp",
+        "anatomi/eller/el_1_adim_2.webp"
+      ]
+    },
+    {
+      "id": "el_cizimi_2",
+      "ad": "El çizimi 2",
+      "ad_en": "Hand drawing 2",
+      "renk": "#FF8FB1",
+      "oran": 1.7755,
+      "adimlar": [
+        "anatomi/eller/el_2_adim_1.webp",
+        "anatomi/eller/el_2_adim_2.webp"
+      ]
+    },
+    {
+      "id": "el_cizimi_3",
+      "ad": "El çizimi 3",
+      "ad_en": "Hand drawing 3",
+      "renk": "#FF8FB1",
+      "oran": 1.4311,
+      "adimlar": [
+        "anatomi/eller/el_3_adim_1.webp",
+        "anatomi/eller/el_3_adim_2.webp",
+        "anatomi/eller/el_3_adim_3.webp",
+        "anatomi/eller/el_3_adim_4.webp"
+      ]
+    },
+    {
+      "id": "goz_onden",
+      "ad": "Önden göz",
+      "ad_en": "Eye, front view",
+      "renk": "#7CC6E8",
+      "oran": 0.783,
+      "adimlar": [
+        "anatomi/gozler/goz_onden_1.webp",
+        "anatomi/gozler/goz_onden_2.webp",
+        "anatomi/gozler/goz_onden_3.webp",
+        "anatomi/gozler/goz_onden_4.webp"
+      ]
+    },
+    {
+      "id": "goz_capraz",
+      "ad": "Çapraz açıdan göz",
+      "ad_en": "Eye, angled view",
+      "renk": "#7CC6E8",
+      "oran": 0.8218,
+      "adimlar": [
+        "anatomi/gozler/goz_capraz_1.webp",
+        "anatomi/gozler/goz_capraz_2.webp",
+        "anatomi/gozler/goz_capraz_3.webp",
+        "anatomi/gozler/goz_capraz_4.webp"
+      ]
+    },
+    {
+      "id": "goz_yandan",
+      "ad": "Yandan göz",
+      "ad_en": "Eye, side view",
+      "renk": "#7CC6E8",
+      "oran": 0.9335,
+      "adimlar": [
+        "anatomi/gozler/goz_yandan_1.webp",
+        "anatomi/gozler/goz_yandan_2.webp",
+        "anatomi/gozler/goz_yandan_3.webp",
+        "anatomi/gozler/goz_yandan_4.webp"
+      ]
+    },
+    {
+      "id": "burun",
+      "ad": "Burun",
+      "ad_en": "Nose",
+      "renk": "#6FD3A0",
+      "oran": 1.5599,
+      "adimlar": [
+        "anatomi/burunlar/burun_1.webp",
+        "anatomi/burunlar/burun_2.webp",
+        "anatomi/burunlar/burun_3.webp",
+        "anatomi/burunlar/burun_4.webp"
+      ]
+    },
+    {
+      "id": "dudak_1",
+      "ad": "Dudak 1",
+      "ad_en": "Lips 1",
+      "renk": "#FFCC4D",
+      "oran": 0.6153,
+      "adimlar": [
+        "anatomi/dudaklar/dudak_1_adim_1.webp",
+        "anatomi/dudaklar/dudak_1_adim_2.webp"
+      ]
+    },
+    {
+      "id": "dudak_2",
+      "ad": "Dudak 2",
+      "ad_en": "Lips 2",
+      "renk": "#FFCC4D",
+      "oran": 0.5697,
+      "adimlar": [
+        "anatomi/dudaklar/dudak_2_adim_1.webp",
+        "anatomi/dudaklar/dudak_2_adim_2.webp"
+      ]
+    },
+    {
+      "id": "dudak_3",
+      "ad": "Dudak 3",
+      "ad_en": "Lips 3",
+      "renk": "#FFCC4D",
+      "oran": 0.6798,
+      "adimlar": [
+        "anatomi/dudaklar/dudak_3_adim_1.webp",
+        "anatomi/dudaklar/dudak_3_adim_2.webp"
+      ]
+    },
+    {
+      "id": "erkek_yuzu",
+      "ad": "Erkek yüzü",
+      "ad_en": "Male face",
+      "renk": "#B59CFF",
+      "oran": 1.3599,
+      "adimlar": [
+        "anatomi/yuzler/erkek_yuzu_1.webp",
+        "anatomi/yuzler/erkek_yuzu_2.webp",
+        "anatomi/yuzler/erkek_yuzu_3.webp",
+        "anatomi/yuzler/erkek_yuzu_4.webp"
+      ]
+    },
+    {
+      "id": "kiz_yuzu",
+      "ad": "Kız yüzü",
+      "ad_en": "Female face",
+      "renk": "#B59CFF",
+      "oran": 1.4778,
+      "adimlar": [
+        "anatomi/yuzler/kiz_yuzu_1.webp",
+        "anatomi/yuzler/kiz_yuzu_2.webp",
+        "anatomi/yuzler/kiz_yuzu_3.webp",
+        "anatomi/yuzler/kiz_yuzu_4.webp"
+      ]
+    },
+    {
+      "id": "futbolcu_portresi",
+      "ad": "Futbolcu portresi",
+      "ad_en": "Footballer portrait",
+      "renk": "#B59CFF",
+      "oran": 1.5373,
+      "adimlar": [
+        "anatomi/portreler/futbolcu_portresi_1.webp",
+        "anatomi/portreler/futbolcu_portresi_2.webp",
+        "anatomi/portreler/futbolcu_portresi_3.webp",
+        "anatomi/portreler/futbolcu_portresi_4.webp"
+      ]
+    }
+  ],
+  "_kaynaklar": "Bazı çizimler internetten alındı: mızraklı şövalye iHeartCraftyThings.com, insan iskeleti timy kaynaklı. Çizim alanından çıkarılan site yazıları burada not edildi."
+}
