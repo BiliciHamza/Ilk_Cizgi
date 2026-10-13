@@ -108,28 +108,6 @@ app/src/main/
    └─ <kategori klasörleri>
 ```
 
-## Derleme
-
-1. Projeyi **Android Studio** ile aç (Gradle kendisi kurulur).
-2. Bir telefon bağla ya da emülatör seç, **Run**'a bas.
-
-Yayın (release) derlemesi için proje kökünde bir `keystore.properties` dosyası ve imza anahtarı gerekir. Bunlar gizli olduğu için depoda yoktur; yoksa derleme deneme anahtarıyla imzalanır.
-
-### Yeni çizim eklemek
-
-- İlgili kategori klasörüne beyaz ya da saydam zeminli, siyah çizgili bir `.webp` / `.png` koy.
-- Görünen adını ve İngilizcesini `kategoriler.json` içindeki `adlar` / `adlar_en` bölümüne yaz.
-- Aynı addan birden fazla varsa sonuna `_1`, `_2` ekle (`goz_1.webp` → "Göz 1").
-- Yeni ders için adım resimlerini aynı boyutta hazırla ve `dersler` listesine ekle.
-
-## Çizimler hakkında
-
-Çizimlerin bir kısmı eğitim amaçlı derlenmiştir; bu çizimlerin hakları sahiplerine aittir. Bir çizimin kaldırılmasını isterseniz lütfen bir *issue* açın.
-
-## Lisans
-
-© 2026 Alteration Studio. Tüm hakları saklıdır.
-Kod incelemek için açıktır; izinsiz kopyalanamaz, dağıtılamaz ya da ticari olarak kullanılamaz.
 
 
 ## Geliştiriciler
