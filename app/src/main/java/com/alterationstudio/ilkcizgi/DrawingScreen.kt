@@ -12,9 +12,11 @@ import android.graphics.PorterDuffXfermode
 import android.graphics.RectF
 import android.hardware.camera2.CaptureRequest
 import android.net.Uri
+import android.os.SystemClock
 import android.util.Size
 import android.widget.Toast
 import androidx.activity.ComponentActivity
+import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.camera.camera2.interop.Camera2CameraControl
@@ -46,6 +48,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -90,6 +93,7 @@ import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
@@ -103,6 +107,7 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
@@ -125,7 +130,9 @@ import kotlin.math.roundToInt
  * Kamera görüntüsünün üstüne çizim 2D olarak çizilir ve ekranda sabit durur.
  * Telefon bir standa yaslı olduğu için kâğıt da ekranda durur, çizim kâğıttan kaymaz.
  * KİLİTLE: Konum tuşlarını kapatır, kameranın odağını ve ışık ayarını sabitler,
- *          ilerleme yüzdesini saymaya başlar.
+ *          ilerleme yüzdesini saymaya başlar (5 saniyede bir baştan hesaplanır).
+ * ARKA PLAN: çizimin arkasına düz zemin koyar; resme bakarak çizmek için.
+ * Kilit ekranın üstündedir; yanındaki göz düğmesi ekranı sadeleştirir (sadece kilit ve o kalır).
  * EL ÖNDE / ÇİZDİKLERİMİ GİZLE: Kamera görüntüsüne göre çizim el üstünde ya da
  * çizdiğin yerlerde gizlenir (Vision.kt).
  * ⏺ hızlandırılmış video, 📷 kâğıdın fotoğrafı: ikisi de "Çizimlerim"e kaydedilir.
@@ -149,12 +156,18 @@ private const val TOOL_SIZE = "boyut"
 private const val TOOL_OPACITY = "saydamlik"
 private const val TOOL_COLOR = "renk"
 private const val TOOL_SENSE = "hassasiyet"
+private const val TOOL_BACKGROUND = "arka_plan"
 private const val DONE_AT = 0.85f           // bu orandan sonra "bitti" sayılır
 private const val GRID_COLS = 4             // ızgaranın yatay kare sayısı
 
+// İlerleme yüzdesi
+private const val PROGRESS_WINDOW_MS = 5000L   // yüzde bu aralıkla baştan hesaplanır
+private const val PROGRESS_CONFIRM = 2         // iz art arda bu kadar karede görülünce "çizildi" sayılır
+private const val PROGRESS_MIN_SEEN = 8        // bir pencerede bundan az görülebilen (elin altında kalan) yerin eski durumu korunur
+
 
 /** Çizimi yükler: beyaz arka plan saydam olur, koyu çizgiler kalır. Büyük resimler küçültülür. */
-private fun loadLineArt(context: Context, path: String): Bitmap? = runCatching {
+internal fun loadLineArt(context: Context, path: String): Bitmap? = runCatching {
     val bounds = BitmapFactory.Options().apply { inJustDecodeBounds = true }
     openDrawingStream(context, path).use { BitmapFactory.decodeStream(it, null, bounds) }
     var sample = 1
@@ -188,7 +201,11 @@ private fun loadLineArt(context: Context, path: String): Bitmap? = runCatching {
 
 /**
  * Çizilen yerleri sayar. Kılavuzun kapladığı hücrelerden kaçında kalem izi görüldüğüne bakar.
- * Bir hücre art arda 3 karede çizili görünürse "çizildi" sayılır (el gölgesi yanıltmasın).
+ * Bir hücre art arda 2 karede çizili görünürse hemen "çizildi" sayılır (yüzde hızlı artar).
+ * 5 saniyede bir yüzde baştan hesaplanır: son 5 saniyede kâğıtta gerçekten görülen izler sayılır.
+ * Telefon kayınca ya da gölge düşünce yanlış sayılan yerler böylece kendiliğinden düşer.
+ * Yüzde sıfıra inmez: yeni pencere boyunca eski sonuç ekranda kalır, sadece görülmeyen yerler çıkar.
+ * Elin altında kalan yerler o an görünmediği için silinmiş sayılmaz (eski durumu korunur).
  */
 private class ProgressTracker {
     /** 0..1, -1 = sayılmıyor. Ekran durumu değil: değişince ekran yeniden kurulmaz. */
@@ -199,17 +216,32 @@ private class ProgressTracker {
         private set
     private var guide: BooleanArray? = null
     private var total = 0
-    private var drawn = BooleanArray(0)
+    private var drawn = BooleanArray(0)   // ekranda sayılan yerler
+    private var seen = BooleanArray(0)    // bu 5 saniyede iz görülen yerler
+    private var visible = IntArray(0)     // bu 5 saniyede elin altında kalmadan görülen kare sayısı
     private var streak = IntArray(0)
     private var key = 0
+    private var windowStart = 0L
+
+    private fun resetCounts(n: Int) {
+        drawn = BooleanArray(n)
+        seen = BooleanArray(n)
+        visible = IntArray(n)
+        streak = IntArray(n)
+        windowStart = SystemClock.elapsedRealtime()
+    }
 
     fun setGuide(g: BooleanArray?, newKey: Int) {
         if (g == null) { clear(); return }
         // Çizim yerinden oynamadıysa (aynı anahtar) önceki ilerleme korunur
         if (newKey != key || drawn.size != g.size) {
-            drawn = BooleanArray(g.size)
-            streak = IntArray(g.size)
+            resetCounts(g.size)
             key = newKey
+        } else if (guide == null) {
+            // Kilit yeniden açıldı: yeni 5 saniyelik pencere baştan başlasın
+            seen.fill(false)
+            visible.fill(0)
+            windowStart = SystemClock.elapsedRealtime()
         }
         guide = g
         total = g.count { it }
@@ -220,19 +252,32 @@ private class ProgressTracker {
 
     /** Yüzdeyi sıfırlar: kılavuz aynı kalır, çizildi sayılan yerler baştan sayılır */
     fun restart() {
-        drawn = BooleanArray(drawn.size)
-        streak = IntArray(streak.size)
+        resetCounts(drawn.size)
         recompute()
     }
 
-    fun onInk(ink: BooleanArray) {
+    fun onInk(ink: BooleanArray, hand: BooleanArray?) {
         val g = guide ?: return
         if (ink.size != g.size) return
+        val h = hand?.takeIf { it.size == g.size }
         for (k in ink.indices) {
+            if (!g[k]) continue
             if (ink[k]) {
-                if (streak[k] < 3) streak[k]++
-                if (streak[k] >= 3) drawn[k] = true
+                if (streak[k] < PROGRESS_CONFIRM) streak[k]++
+                if (streak[k] >= PROGRESS_CONFIRM) { seen[k] = true; drawn[k] = true }
             } else streak[k] = 0
+            if (h == null || !h[k]) visible[k]++
+        }
+        // 5 saniye doldu: yüzde, bu sürede kâğıtta gerçekten görülen izlere göre yeniden hesaplanır
+        val now = SystemClock.elapsedRealtime()
+        if (now - windowStart >= PROGRESS_WINDOW_MS) {
+            for (k in g.indices) {
+                if (!g[k]) continue
+                drawn[k] = seen[k] || (drawn[k] && visible[k] < PROGRESS_MIN_SEEN)
+                seen[k] = false
+                visible[k] = 0
+            }
+            windowStart = now
         }
         recompute()
     }
@@ -298,7 +343,7 @@ fun DrawingScreen(
     onBack: () -> Unit,
     onHelp: () -> Unit,
     lesson: LessonInfo? = null,
-    // Devam Et ile açıldıysa son kaydedilen yer, boyut ve ayarlar (yoksa Ayarlar'daki başlangıç değerleri)
+    // Devam Et ya da Son açtıkların ile açıldıysa son kaydedilen yer, boyut ve ayarlar (yoksa Ayarlar'daki başlangıç değerleri)
     resume: LastDrawing? = null
 ) {
     val context = LocalContext.current
@@ -337,7 +382,7 @@ fun DrawingScreen(
     val imageAspect = lineArt?.let { it.height.toFloat() / it.width.toFloat() } ?: 1f
 
     // ---------- Ayarlar ----------
-    // Başlangıç değerleri Ayarlar sekmesinden gelir; Devam Et ile açıldıysa son kalınan hâlden
+    // Başlangıç değerleri Ayarlar sekmesinden gelir; Devam Et ya da Son açtıkların ile açıldıysa son kalınan hâlden
     val prefs = remember { Settings.drawPrefs(context) }
     val start = remember { resume }
     var opacity by remember { mutableFloatStateOf(start?.opacity ?: prefs.opacity) }
@@ -350,6 +395,14 @@ fun DrawingScreen(
     var gridOn by remember { mutableStateOf(start?.grid ?: prefs.grid) }
     var colorIndex by remember { mutableIntStateOf(start?.colorIndex ?: prefs.colorIndex) }
     var blink by remember { mutableStateOf(start?.blink ?: prefs.blink) }
+    // Arka plan (BackgroundColors sırası; 0 = yok)
+    var backdropIndex by remember { mutableIntStateOf(start?.background ?: prefs.background) }
+    // Sade görünüm: üstte sadece kilit ve göz düğmesi kalır, geri kalan her şey gizlenir (çizim ve maske çalışmaya devam eder)
+    var cleanView by remember { mutableStateOf(false) }
+    // Yansıtmayı gizle: çizim (kılavuz) tamamen gizlenir, sadece kamera görünür; çizdiğini kontrol etmek için.
+    // Kaydedilmez: her çizim yansıtma açık başlar (yüzde sayımı ve diğer ayarlar etkilenmez)
+    var guideHidden by remember { mutableStateOf(false) }
+    BackHandler(enabled = cleanView) { cleanView = false }
     // Konum ekranın oranı olarak, boyut ekran genişliğinin oranı olarak
     var fixedX by remember { mutableFloatStateOf(start?.x ?: 0.5f) }
     var fixedY by remember { mutableFloatStateOf(start?.y ?: 0.5f) }
@@ -368,16 +421,22 @@ fun DrawingScreen(
         lessonStep = sessionLesson?.step ?: 0,
         x = fixedX, y = fixedY, w = fixedW, rotation = rotation, mirror = mirror,
         opacity = opacity, colorIndex = colorIndex, grid = gridOn, blink = blink,
-        handFront = handFront, hideDrawn = hideDrawn, sensitivity = handSensitivity
+        handFront = handFront, hideDrawn = hideDrawn, sensitivity = handSensitivity,
+        background = backdropIndex
     )
     LaunchedEffect(Unit) {
         snapshotFlow { sessionNow() }.collectLatest { s ->
             delay(500)
             LastSession.save(context, s)
+            RecentSettings.save(context, s)
         }
     }
     DisposableEffect(Unit) {
-        onDispose { LastSession.save(context, sessionNow()) }
+        onDispose {
+            val s = sessionNow()
+            LastSession.save(context, s)
+            RecentSettings.save(context, s)
+        }
     }
 
     // ---------- Kameradan gelen maske ve ilerleme ----------
@@ -390,7 +449,7 @@ fun DrawingScreen(
     val analyzer = remember {
         FrameAnalyzer(onResult = { r ->
             handMask = r?.mask
-            r?.ink?.let { tracker.onInk(it) }
+            r?.ink?.let { tracker.onInk(it, r.hand) }
         })
     }
     // Ekran tarafındaki ayarları arka plan işçisine bildir
@@ -595,7 +654,7 @@ fun DrawingScreen(
     fun toggleRecording() {
         val r = recorder
         if (r == null) {
-            val nr = TimelapseRecorder(context)
+            val nr = TimelapseRecorder(context, prefs.videoFps)
             recorder = nr
             recordStart = System.currentTimeMillis()
             // Kareleri kamera işçisi arka planda üretir (ekran görüntüsü almak ekranı bekletiyordu)
@@ -738,9 +797,10 @@ fun DrawingScreen(
         TraceOverlay(
             bitmap = { lineArt },
             corners = { currentCorners() },
-            opacity = { opacity * blinkAlpha.value },
+            opacity = { if (guideHidden) 0f else opacity * blinkAlpha.value },
             mask = { if (handFront || hideDrawn) handMask else null },
-            tint = { if (isPhoto) null else GuideColors[colorIndex] },
+            tint = { if (isPhoto) null else guideTintOn(colorIndex, backdropIndex) },
+            backdrop = { if (isPhoto) null else BackgroundColors.getOrNull(backdropIndex) },
             mirror = { mirror },
             grid = { gridOn }
         )
@@ -758,36 +818,59 @@ fun DrawingScreen(
                 .statusBarsPadding()
                 .padding(horizontal = 16.dp, vertical = 12.dp)
         ) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                RoundIcon(Glyph.Back, onClick = onBack)
-                Spacer(Modifier.weight(1f))
-                // ⏺ video kaydı
-                val rec = recorder
-                if (rec != null) {
-                    RecordChip(rec, recordStart) { toggleRecording() }
-                } else {
-                    RoundIcon(Glyph.Record, tint = Ui.Danger, enabled = !encoding, onClick = { toggleRecording() })
+            // Üst sıra: geri · · · kilit, sade görünüm, kayıt, fener, favori, yardım.
+            // Dar ekranda düğmeler biraz küçülür ki 7 düğme (kayıttayken süre hapı dahil) tek sıraya sığsın.
+            // Sade görünümde sadece kilit ve göz düğmesi görünür; diğerleri yerinde ama görünmez ve basılmaz
+            // (kilit ve göz kaymasın, parmak aynı yere bassın).
+            BoxWithConstraints(Modifier.fillMaxWidth()) {
+                val btn = when {
+                    maxWidth >= 392.dp -> 44.dp
+                    maxWidth >= 356.dp -> 40.dp
+                    else -> 36.dp
                 }
-                Spacer(Modifier.width(8.dp))
-                // Fener (telefonda flaş varsa)
-                if (camera?.cameraInfo?.hasFlashUnit() == true) {
-                    RoundIcon(Glyph.Torch, active = torchOn, onClick = {
-                        torchOn = !torchOn
-                        camera?.cameraControl?.enableTorch(torchOn)
-                        // Kilitliyken ışık değişti: ışık ayarını yeni duruma göre yeniden sabitle
-                        if (locked) scope.launch {
-                            setCameraLock(camera, previewView, false)
-                            delay(700)
-                            if (locked) setCameraLock(camera, previewView, true)
+                val gap = if (btn == 44.dp) 8.dp else if (btn == 40.dp) 6.dp else 4.dp
+                val others = !cleanView
+                // maxWidth iç Row'larda okunamaz (Compose kapsam kuralı): burada bir kere hesaplanır
+                val showFrames = maxWidth >= 430.dp
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    RoundIcon(Glyph.Back, size = btn, enabled = others, modifier = Modifier.alpha(if (others) 1f else 0f), onClick = onBack)
+                    Spacer(Modifier.weight(1f))
+                    // Kilit: konumu, odağı ve ışığı sabitler, yüzdeyi saymaya başlar
+                    RoundIcon(if (locked) Glyph.Lock else Glyph.Unlock, active = locked, size = btn, onClick = { setLocked(!locked) })
+                    Spacer(Modifier.width(gap))
+                    // Sade görünüm: ekrandaki her şeyi gizler / geri getirir
+                    RoundIcon(if (cleanView) Glyph.Eye else Glyph.EyeOff, active = cleanView, size = btn, onClick = { cleanView = !cleanView })
+                    Spacer(Modifier.width(gap))
+                    Row(Modifier.alpha(if (others) 1f else 0f), verticalAlignment = Alignment.CenterVertically) {
+                        // ⏺ video kaydı
+                        val rec = recorder
+                        if (rec != null) {
+                            RecordChip(rec, recordStart, height = btn, showFrames = showFrames, enabled = others) { toggleRecording() }
+                        } else {
+                            RoundIcon(Glyph.Record, tint = Ui.Danger, size = btn, enabled = others && !encoding, onClick = { toggleRecording() })
                         }
-                    })
-                    Spacer(Modifier.width(8.dp))
+                        Spacer(Modifier.width(gap))
+                        // Fener (telefonda flaş varsa) 
+                        if (camera?.cameraInfo?.hasFlashUnit() == true) {
+                            RoundIcon(Glyph.Torch, active = torchOn, size = btn, enabled = others, onClick = {
+                                torchOn = !torchOn
+                                camera?.cameraControl?.enableTorch(torchOn)
+                                // Kilitliyken ışık değişti: ışık ayarını yeni duruma göre yeniden sabitle
+                                if (locked) scope.launch {
+                                    setCameraLock(camera, previewView, false)
+                                    delay(700)
+                                    if (locked) setCameraLock(camera, previewView, true)
+                                }
+                            })
+                            Spacer(Modifier.width(gap))
+                        }
+                        val fav = Library.isFavorite(drawing.path)
+                        RoundIcon(if (fav) Glyph.HeartFilled else Glyph.Heart, tint = if (fav) Ui.Rose else null, size = btn,
+                            enabled = others, onClick = { Library.toggleFavorite(context, drawing.path) })
+                        Spacer(Modifier.width(gap))
+                        RoundIcon(Glyph.Help, size = btn, enabled = others, onClick = onHelp)
+                    }
                 }
-                val fav = Library.isFavorite(drawing.path)
-                RoundIcon(if (fav) Glyph.HeartFilled else Glyph.Heart, tint = if (fav) Ui.Rose else null,
-                    onClick = { Library.toggleFavorite(context, drawing.path) })
-                Spacer(Modifier.width(8.dp))
-                RoundIcon(Glyph.Help, onClick = onHelp)
             }
 
             val hint = when {
@@ -798,13 +881,13 @@ fun DrawingScreen(
                     lang.pick("Yeni çizgiler önceki adımın tam üstüne gelir. Yerini değiştirme, kilitle ve devam et.",
                         "New lines land right on top of the last step. Don't move it, just lock and carry on.")
                 lesson != null ->
-                    lang.pick("Telefonu sabitle, alttaki Konum ve Boyut ile hizala, sonra kilitle. Her adımda yeni çizgiler eklenecek.",
-                        "Prop the phone, line it up with Position and Size below, then lock. Each step adds new lines.")
+                    lang.pick("Telefonu sabitle, alttaki Konum ve Boyut ile hizala, sonra üstteki kilide bas. Her adımda yeni çizgiler eklenecek.",
+                        "Prop the phone, line it up with Position and Size below, then tap the lock at the top. Each step adds new lines.")
                 else ->
-                    lang.pick("Telefonu sabitle, alttaki Konum ve Boyut ile çizimi hizala, sonra kilitle.",
-                        "Prop the phone, line up the drawing with Position and Size below, then lock.")
+                    lang.pick("Telefonu sabitle, alttaki Konum ve Boyut ile çizimi hizala, sonra üstteki kilide bas.",
+                        "Prop the phone, line up the drawing with Position and Size below, then tap the lock at the top.")
             }
-            if (hint != null) {
+            if (hint != null && !cleanView) {
                 Spacer(Modifier.height(10.dp))
                 Text(
                     text = hint,
@@ -820,12 +903,12 @@ fun DrawingScreen(
         }
 
         // ---------- Video hazırlanıyor ----------
-        if (encoding) {
+        if (encoding && !cleanView) {
             EncodingCard({ encodeProgress }, lang, Modifier.align(Alignment.Center))
         }
 
-        // ---------- Alt: bilgi, ders, ilerleme ve araç çubuğu ----------
-        Column(
+        // ---------- Alt: bilgi, ders, ilerleme ve araç çubuğu (sade görünümde gizli) ----------
+        if (!cleanView) Column(
             modifier = Modifier
                 .align(Alignment.BottomCenter)
                 .fillMaxWidth()
@@ -1009,6 +1092,36 @@ fun DrawingScreen(
                                     }
                                 }
                             }
+                            TOOL_BACKGROUND -> ToolControl(lang.pick("Arka plan", "Background")) {
+                                Text(
+                                    lang.pick("Çizimi düz zeminde gösterir; resme bakarak çizmek istersen kullan.",
+                                        "Shows the drawing on a plain background, handy for drawing by looking at it."),
+                                    color = Ui.Muted, fontSize = 12.sp, lineHeight = 16.sp
+                                )
+                                Spacer(Modifier.height(8.dp))
+                                Row(
+                                    Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.spacedBy(10.dp, Alignment.CenterHorizontally)
+                                ) {
+                                    BackgroundColors.forEachIndexed { i, c ->
+                                        val sel = backdropIndex == i
+                                        Box(
+                                            Modifier
+                                                .size(40.dp)
+                                                .clip(CircleShape)
+                                                .border(2.dp, if (sel) Ui.Accent else Color.White.copy(alpha = 0.25f), CircleShape)
+                                                .padding(5.dp)
+                                                .clip(CircleShape)
+                                                .background(c ?: Color.Transparent)
+                                                .clickable { backdropIndex = i },
+                                            contentAlignment = Alignment.Center
+                                        ) {
+                                            // İlk seçenek: arka plan yok (kamera görünür)
+                                            if (c == null) ToolIcon(Glyph.Close, Color.White, size = 18.dp)
+                                        }
+                                    }
+                                }
+                            }
                             TOOL_SENSE -> ToolControl(lang.pick(
                                 "Algılama hassasiyeti: ${(handSensitivity * 10).roundToInt()}",
                                 "Detection sensitivity: ${(handSensitivity * 10).roundToInt()}")) {
@@ -1061,10 +1174,8 @@ fun DrawingScreen(
                                     .verticalScroll(toolScroll)
                                     .padding(start = 8.dp, end = 8.dp, top = 2.dp, bottom = 10.dp)
                             ) {
-                                // 1. sıra: kilit ve konum ayarları
+                                // 1. sıra: konum ve görünüm ayarları (kilit ekranın üstünde)
                                 Row(Modifier.fillMaxWidth()) {
-                                    ToolButton(if (locked) Glyph.Unlock else Glyph.Lock, if (locked) lang.pick("Kilidi aç", "Unlock") else lang.pick("Kilitle", "Lock"),
-                                        on = locked, onColor = Ui.Sun, modifier = Modifier.weight(1f)) { setLocked(!locked) }
                                     ToolButton(Glyph.Move, lang.pick("Konum", "Position"), selected = tool == TOOL_MOVE, enabled = canEdit,
                                         modifier = Modifier.weight(1f)) { pick(TOOL_MOVE) }
                                     ToolButton(Glyph.Resize, lang.pick("Boyut", "Size"), selected = tool == TOOL_SIZE, enabled = canEdit,
@@ -1073,6 +1184,10 @@ fun DrawingScreen(
                                         modifier = Modifier.weight(1f)) { pick(TOOL_OPACITY) }
                                     ToolButton(Glyph.Color, lang.pick("Renk", "Colour"), selected = tool == TOOL_COLOR,
                                         enabled = !isPhoto, modifier = Modifier.weight(1f)) { pick(TOOL_COLOR) }
+                                    // Arka plan seçiliyse renkli görünür; dokununca renk seçimi açılır
+                                    ToolButton(Glyph.Backdrop, lang.pick("Arka plan", "Background"), selected = tool == TOOL_BACKGROUND,
+                                        on = backdropIndex != 0 && !isPhoto, onColor = Ui.Mint, enabled = !isPhoto,
+                                        modifier = Modifier.weight(1f)) { pick(TOOL_BACKGROUND) }
                                 }
                                 // 2. sıra: aç/kapa özellikler
                                 Row(Modifier.fillMaxWidth()) {
@@ -1093,14 +1208,17 @@ fun DrawingScreen(
                                     ToolButton(Glyph.Blink, lang.pick("Yanıp sönsün", "Blink"), on = blink, onColor = Ui.Sun,
                                         modifier = Modifier.weight(1f)) { blink = !blink }
                                 }
-                                // 3. sıra: aynala ve sıfırla
+                                // 3. sıra: aynala, yansıtmayı gizle ve sıfırla
                                 Row(Modifier.fillMaxWidth()) {
                                     ToolButton(Glyph.Mirror, lang.pick("Aynala", "Mirror"), on = mirror, onColor = Ui.Accent, enabled = canEdit,
                                         modifier = Modifier.weight(1f)) { mirror = !mirror }
+                                    // Açıkken çizim hiç görünmez, sadece kâğıt (kamera) görünür
+                                    ToolButton(Glyph.HideGuide, lang.pick("Yansıtmayı gizle", "Hide guide"), on = guideHidden, onColor = Ui.Rose,
+                                        modifier = Modifier.weight(1f)) { guideHidden = !guideHidden }
                                     // Kilitliyken yer değişmez, sadece yüzde sıfırlanır
                                     ToolButton(Glyph.Reset, if (locked) lang.pick("Yüzdeyi sıfırla", "Reset %") else lang.pick("Sıfırla", "Reset"),
                                         modifier = Modifier.weight(1f)) { resetPressed() }
-                                    Spacer(Modifier.weight(3f))
+                                    Spacer(Modifier.weight(2f))
                                 }
                             }
                             // Alt kenarda hafif gölge: kesik sıra "aşağıda devamı var" gibi görünsün (en alta inince kaybolur)
@@ -1161,7 +1279,14 @@ private fun ProgressAndPhoto(
 
 /** Kayıt sürerken: durdur, süre ve kare sayısı (her yeni karede sadece bu parça yenilenir) */
 @Composable
-private fun RecordChip(rec: TimelapseRecorder, startedAt: Long, onStop: () -> Unit) {
+private fun RecordChip(
+    rec: TimelapseRecorder,
+    startedAt: Long,
+    height: Dp = 44.dp,
+    showFrames: Boolean = true,
+    enabled: Boolean = true,
+    onStop: () -> Unit
+) {
     val frames = rec.frameCount
     var now by remember { mutableLongStateOf(System.currentTimeMillis()) }
     LaunchedEffect(Unit) {
@@ -1170,17 +1295,18 @@ private fun RecordChip(rec: TimelapseRecorder, startedAt: Long, onStop: () -> Un
     val secs = ((now - startedAt) / 1000).toInt().coerceAtLeast(0)
     Row(
         Modifier
-            .height(44.dp)
+            .height(height)
             .clip(RoundedCornerShape(50))
             .background(Ui.Danger)
-            .clickable(onClick = onStop)
-            .padding(horizontal = 14.dp),
+            .clickable(enabled = enabled, onClick = onStop)
+            .padding(horizontal = if (showFrames) 14.dp else 10.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         ToolIcon(Glyph.Stop, Color.White, size = 16.dp)
-        Spacer(Modifier.width(8.dp))
+        Spacer(Modifier.width(if (showFrames) 8.dp else 6.dp))
+        // Dar ekranda sadece süre (üst sırada yer kalsın), genişte süre ve kare sayısı
         Text(
-            "%d:%02d · %d".format(secs / 60, secs % 60, frames),
+            if (showFrames) "%d:%02d · %d".format(secs / 60, secs % 60, frames) else "%d:%02d".format(secs / 60, secs % 60),
             color = Color.White, fontSize = 13.sp, fontWeight = FontWeight.Bold
         )
     }
@@ -1288,20 +1414,22 @@ private fun PermissionCard(onAsk: () -> Unit, onBack: () -> Unit) {
 
 /**
  * Çizimi ekranda 4 köşeye gerer; maske varsa el üstünde ve çizdiğin yerlerde gizler.
- * İsteğe bağlı: kılavuz rengi, aynalama ve ızgara.
+ * İsteğe bağlı: kılavuz rengi, arka plan zemini, aynalama ve ızgara.
  */
 @Composable
-private fun TraceOverlay(
+internal fun TraceOverlay(
     bitmap: () -> Bitmap?,
     corners: () -> FloatArray?,
     opacity: () -> Float,
     mask: () -> Bitmap?,
     tint: () -> Color?,
+    backdrop: () -> Color?,
     mirror: () -> Boolean,
     grid: () -> Boolean
 ) {
     val matrix = remember { android.graphics.Matrix() }
     val paint = remember { Paint(Paint.FILTER_BITMAP_FLAG or Paint.ANTI_ALIAS_FLAG) }
+    val backdropPaint = remember { Paint(Paint.ANTI_ALIAS_FLAG).apply { style = Paint.Style.FILL } }
     val gridPaint = remember { Paint(Paint.ANTI_ALIAS_FLAG).apply { style = Paint.Style.STROKE } }
     val maskPaint = remember {
         Paint(Paint.FILTER_BITMAP_FLAG).apply {
@@ -1345,6 +1473,12 @@ private fun TraceOverlay(
             val save = if (m != null) nc.saveLayer(layer, null) else nc.save()
             nc.save()
             nc.concat(matrix)
+            // Arka plan: çizimin altına düz zemin (saydamlık ve el maskesi zemine de uygulanır)
+            backdrop()?.let { bg ->
+                backdropPaint.color = bg.toArgb()
+                backdropPaint.alpha = alpha
+                nc.drawRect(0f, 0f, bmp.width.toFloat(), bmp.height.toFloat(), backdropPaint)
+            }
             nc.drawBitmap(bmp, 0f, 0f, paint)
             if (grid()) {
                 // Izgara çizimle aynı yerde, kare hücreler; çizgi kalınlığı ekranda sabit kalsın
@@ -1415,18 +1549,20 @@ private fun RepeatButton(label: String, enabled: Boolean, small: Boolean = false
     }
 }
 
-/** Yuvarlak, yarı saydam simge düğmesi (geri, kayıt, fener, favori, yardım) */
+/** Yuvarlak, yarı saydam simge düğmesi (geri, kilit, sade görünüm, kayıt, fener, favori, yardım) */
 @Composable
 private fun RoundIcon(
     glyph: Glyph,
     active: Boolean = false,
     tint: Color? = null,
     enabled: Boolean = true,
+    size: Dp = 44.dp,
+    modifier: Modifier = Modifier,
     onClick: () -> Unit
 ) {
     Box(
-        modifier = Modifier
-            .size(44.dp)
+        modifier = modifier
+            .size(size)
             .clip(CircleShape)
             .background(if (active) Ui.Sun else Ui.Glass)
             .clickable(enabled = enabled, onClick = onClick),
@@ -1440,7 +1576,7 @@ private fun RoundIcon(
                 tint != null -> tint
                 else -> Color.White
             },
-            size = 22.dp
+            size = size * 0.5f
         )
     }
 }

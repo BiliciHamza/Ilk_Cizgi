@@ -1,12 +1,12 @@
 package com.alterationstudio.ilkcizgi
 
-import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.media.MediaPlayer
 import android.net.Uri
-import android.widget.Toast
+import android.widget.VideoView
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -35,6 +35,8 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
@@ -53,6 +55,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.viewinterop.AndroidView
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import androidx.core.content.FileProvider
@@ -178,22 +181,6 @@ fun shareUri(context: Context, uri: Uri, mime: String, title: String) {
         addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
     }
     runCatching { context.startActivity(Intent.createChooser(send, title)) }
-}
-
-fun openVideo(context: Context, uri: Uri, lang: Lang) {
-    val view = Intent(Intent.ACTION_VIEW).apply {
-        setDataAndType(uri, "video/mp4")
-        addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-    }
-    try {
-        context.startActivity(view)
-    } catch (_: ActivityNotFoundException) {
-        Toast.makeText(context, lang.pick("Video açacak uygulama bulunamadı", "No app found to play the video"),
-            Toast.LENGTH_SHORT).show()
-    } catch (_: SecurityException) {
-        Toast.makeText(context, lang.pick("Video bulunamadı, silinmiş olabilir", "Video not found, it may have been deleted"),
-            Toast.LENGTH_SHORT).show()
-    }
 }
 
 /** Büyük fotoğrafı küçültüp açar */
@@ -381,6 +368,8 @@ private fun WorkDetail(w: Work, onClose: () -> Unit) {
     val context = LocalContext.current
     val lang = LocalLang.current
     var showAfter by remember(w.id) { mutableStateOf(true) }
+    // Video: önce kapak (çizimin önizlemesi) görünür, oynat'a basınca uygulamanın kendi oynatıcısı açılır
+    var showPlayer by remember(w.id) { mutableStateOf(false) }
     var confirmDelete by remember(w.id) { mutableStateOf(false) }
 
     Dialog(onDismissRequest = onClose, properties = DialogProperties(usePlatformDefaultWidth = false)) {
@@ -441,10 +430,12 @@ private fun WorkDetail(w: Work, onClose: () -> Unit) {
                     .weight(1f)
                     .fillMaxWidth()
                     .clip(RoundedCornerShape(20.dp))
-                    .background(if (w.isVideo || !showAfter) Ui.DrawPaper else Color.Black),
+                    .background(if (w.isVideo && showPlayer) Color.Black else if (w.isVideo || !showAfter) Ui.DrawPaper else Color.Black),
                 contentAlignment = Alignment.Center
             ) {
-                if (!w.isVideo && showAfter) {
+                if (w.isVideo && showPlayer) {
+                    VideoPlayer(Uri.parse(w.file), lang)
+                } else if (!w.isVideo && showAfter) {
                     rememberFileBitmap(w.file, 1600)?.let {
                         Image(it.asImageBitmap(), null, contentScale = ContentScale.Fit, modifier = Modifier.fillMaxSize())
                     }
@@ -462,9 +453,9 @@ private fun WorkDetail(w: Work, onClose: () -> Unit) {
                                 .size(76.dp)
                                 .clip(CircleShape)
                                 .background(Ui.Rose)
-                                .clickable { openVideo(context, Uri.parse(w.file), lang) },
+                                .clickable { showPlayer = true },
                             contentAlignment = Alignment.Center
-                        ) { Text("▶", color = Ui.OnAccent, fontSize = 30.sp) }
+                        ) { ToolIcon(Glyph.Resume, Ui.OnAccent, size = 34.dp) }
                     }
                 }
             }
@@ -503,6 +494,118 @@ private fun WorkDetail(w: Work, onClose: () -> Unit) {
             },
             dismissButton = { TextButton(onClick = { confirmDelete = false }) { Text(L("Vazgeç", "Cancel")) } }
         )
+    }
+}
+
+/** Oynatma hızları: hızlandırılmış video çok hızlı gelirse yavaşlatmak için (1× = kaydedildiği hız) */
+private val VideoSpeeds = listOf(0.25f, 0.5f, 1f, 2f)
+
+/** Oynatıcının Android tarafı: görünüm ve hazırlandığında gelen MediaPlayer (ekran durumu değil) */
+private class PlayerHolder {
+    var view: VideoView? = null
+    var player: MediaPlayer? = null
+}
+
+private fun MediaPlayer.applySpeed(speed: Float) {
+    // Bazı telefonlar bazı hızları desteklemez: o zaman hız değişmez, oynatma sürer
+    runCatching { playbackParams = playbackParams.setSpeed(speed) }
+}
+
+/**
+ * Uygulamanın kendi video oynatıcısı (ek kütüphane yok: Android'in VideoView'i).
+ * Video döngüde oynar; altta oynat/duraklat ve hız seçimi var. Ekrandan çıkınca oynatıcı kapatılır.
+ */
+@Composable
+private fun VideoPlayer(uri: Uri, lang: Lang) {
+    var playing by remember(uri) { mutableStateOf(true) }
+    var speed by remember(uri) { mutableFloatStateOf(1f) }
+    var failed by remember(uri) { mutableStateOf(false) }
+    val holder = remember(uri) { PlayerHolder() }
+
+    Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+        if (failed) {
+            Text(
+                lang.pick("Video açılamadı, galeriden silinmiş olabilir.", "Couldn't open the video, it may have been deleted from the gallery."),
+                color = Color.White, fontSize = 14.sp, textAlign = TextAlign.Center,
+                modifier = Modifier.padding(24.dp)
+            )
+        } else {
+            // Boyut verilmez: VideoView videonun oranını koruyarak kendini sığdırır, Box ortalar
+            AndroidView(factory = { ctx ->
+                VideoView(ctx).apply {
+                    setOnPreparedListener { mp ->
+                        mp.isLooping = true
+                        holder.player = mp
+                        if (playing) {
+                            mp.applySpeed(speed)
+                            start()
+                        }
+                    }
+                    setOnErrorListener { _, _, _ -> failed = true; true }
+                    setVideoURI(uri)
+                    holder.view = this
+                }
+            })
+        }
+
+        if (!failed) {
+            // Oynat/duraklat ve hız
+            Row(
+                Modifier
+                    .align(Alignment.BottomCenter)
+                    .padding(12.dp)
+                    .clip(RoundedCornerShape(50))
+                    .background(Ui.Glass)
+                    .padding(4.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Box(
+                    Modifier
+                        .size(40.dp)
+                        .clip(CircleShape)
+                        .background(Ui.Rose)
+                        .clickable {
+                            val v = holder.view ?: return@clickable
+                            if (playing) {
+                                v.pause()
+                                playing = false
+                            } else {
+                                holder.player?.applySpeed(speed)
+                                v.start()
+                                playing = true
+                            }
+                        },
+                    contentAlignment = Alignment.Center
+                ) { ToolIcon(if (playing) Glyph.Pause else Glyph.Resume, Ui.OnAccent, size = 20.dp) }
+                Spacer(Modifier.size(6.dp))
+                VideoSpeeds.forEach { s ->
+                    val sel = speed == s
+                    val label = if (s == 0.25f) "0,25×" else if (s == 0.5f) "0,5×" else "${s.toInt()}×"
+                    Text(
+                        if (lang == Lang.EN) label.replace(',', '.') else label,
+                        color = if (sel) Ui.OnAccent else Color.White,
+                        fontSize = 13.sp, fontWeight = FontWeight.Bold,
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(50))
+                            .background(if (sel) Ui.Accent else Color.Transparent)
+                            .clickable {
+                                speed = s
+                                // Duraklatılmışken hemen uygulanmaz (uygulanırsa video kendiliğinden başlar); oynat'a basınca uygulanır
+                                if (playing) holder.player?.applySpeed(s)
+                            }
+                            .padding(horizontal = 10.dp, vertical = 8.dp)
+                    )
+                }
+            }
+        }
+    }
+
+    DisposableEffect(uri) {
+        onDispose {
+            holder.view?.stopPlayback()
+            holder.view = null
+            holder.player = null
+        }
     }
 }
 

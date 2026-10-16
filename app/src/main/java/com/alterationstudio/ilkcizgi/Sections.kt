@@ -131,13 +131,16 @@ fun LessonsScreen(lessons: List<Lesson>, onBack: () -> Unit, onOpenLesson: (Less
 /**
  * Son açtıkların, Favorilerim ya da Fotoğraflarım.
  * Fotoğraflarım'da bir çizime uzun basınca silinebilir.
+ * Son açtıkların'dan açılan çizim en son bırakıldığı ayarlarla gelir (onOpenRecent).
  */
 @Composable
 fun CollectionScreen(
     section: String,
     lookup: (String) -> Pair<CatalogItem, Color>?,
     onBack: () -> Unit,
-    onOpenDrawing: (String) -> Unit
+    onOpenDrawing: (String) -> Unit,
+    onOpenRecent: (String) -> Unit,
+    onPreview: (path: String, fromRecent: Boolean) -> Unit
 ) {
     val context = LocalContext.current
     var toDelete by remember { mutableStateOf<CatalogItem?>(null) }
@@ -195,7 +198,8 @@ fun CollectionScreen(
                         item = item,
                         color = c,
                         onLongClick = if (section == SECTION_PHOTOS) ({ toDelete = item }) else null,
-                        onClick = { onOpenDrawing(item.path) }
+                        onPreview = { onPreview(item.path, section == SECTION_RECENT) },
+                        onClick = { if (section == SECTION_RECENT) onOpenRecent(item.path) else onOpenDrawing(item.path) }
                     )
                 }
             }
@@ -223,11 +227,14 @@ fun CollectionScreen(
 /**
  * Kısayollar sekmesi: Son açtıkların, Favorilerim, Fotoğraflarım.
  * Üstteki üç karttan biri seçilir, altında o listenin çizimleri görünür.
+ * Son açtıkların'dan açılan çizim en son bırakıldığı ayarlarla gelir (onOpenRecent).
  */
 @Composable
 fun ShortcutsScreen(
     lookup: (String) -> Pair<CatalogItem, Color>?,
-    onOpenDrawing: (String) -> Unit
+    onOpenDrawing: (String) -> Unit,
+    onOpenRecent: (String) -> Unit,
+    onPreview: (path: String, fromRecent: Boolean) -> Unit
 ) {
     val context = LocalContext.current
     var section by rememberSaveable { mutableStateOf(SECTION_RECENT) }
@@ -290,7 +297,8 @@ fun ShortcutsScreen(
                     item = item,
                     color = c,
                     onLongClick = if (section == SECTION_PHOTOS) ({ toDelete = item }) else null,
-                    onClick = { onOpenDrawing(item.path) }
+                    onPreview = { onPreview(item.path, section == SECTION_RECENT) },
+                    onClick = { if (section == SECTION_RECENT) onOpenRecent(item.path) else onOpenDrawing(item.path) }
                 )
             }
         }

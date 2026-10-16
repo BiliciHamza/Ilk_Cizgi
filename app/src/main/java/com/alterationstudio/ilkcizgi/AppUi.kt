@@ -192,7 +192,9 @@ object Settings {
             grid = p.getBoolean("izgara", d.grid),
             blink = p.getBoolean("yanip_sonme", d.blink),
             blinkSeconds = p.getInt("yanip_sonme_saniye", d.blinkSeconds).coerceIn(1, MAX_BLINK_SECONDS),
-            sensitivity = p.getFloat("hassasiyet", d.sensitivity).coerceIn(0f, 1f)
+            sensitivity = p.getFloat("hassasiyet", d.sensitivity).coerceIn(0f, 1f),
+            videoFps = p.getInt("video_fps", d.videoFps).takeIf { it in VIDEO_FPS_OPTIONS } ?: d.videoFps,
+            background = p.getInt("arka_plan", d.background).coerceIn(0, BackgroundColors.lastIndex)
         )
     }
 
@@ -206,6 +208,8 @@ object Settings {
             .putBoolean("yanip_sonme", v.blink)
             .putInt("yanip_sonme_saniye", v.blinkSeconds)
             .putFloat("hassasiyet", v.sensitivity)
+            .putInt("video_fps", v.videoFps)
+            .putInt("arka_plan", v.background)
             .apply()
     }
 }
@@ -214,6 +218,8 @@ object Settings {
  * Çizim ekranının başlangıç ayarları (Ayarlar sekmesinden değiştirilir).
  * blinkSeconds: yanıp sönen kılavuz kaç saniyede bir kaybolsun (1–60).
  * sensitivity: algılama hassasiyeti (0–1). Önerilen ve varsayılan 0 (bkz. SENSITIVITY_RECOMMENDED).
+ * videoFps: kaydedilen hızlandırılmış videonun saniyedeki kare sayısı (bkz. VIDEO_FPS_OPTIONS).
+ * background: çizimin arkasındaki düz zemin (BackgroundColors sırası; 0 = yok, kamera görünür).
  */
 data class DrawPrefs(
     val opacity: Float = 0.7f,
@@ -223,7 +229,9 @@ data class DrawPrefs(
     val grid: Boolean = false,
     val blink: Boolean = false,
     val blinkSeconds: Int = 3,
-    val sensitivity: Float = SENSITIVITY_RECOMMENDED
+    val sensitivity: Float = SENSITIVITY_RECOMMENDED,
+    val videoFps: Int = VIDEO_FPS_DEFAULT,
+    val background: Int = 0
 )
 
 const val MAX_BLINK_SECONDS = 60
@@ -238,6 +246,17 @@ const val SENSITIVITY_RECOMMENDED = 0f
 const val SENSITIVITY_STEPS = 9 // 0, 0.1 … 1 (11 kademe)
 
 /**
+ * Hızlandırılmış videonun saniyedeki kare sayısı (kaydedilen dosyanın hızı).
+ * Kareler her TIMELAPSE_INTERVAL_MS'de (1,2 sn) bir alınır; video hızı = fps × 1,2
+ * (3 → ~4×, 6 → ~7×, 12 → ~14×, 24 → ~29×). Varsayılan ~7×.
+ */
+val VIDEO_FPS_OPTIONS = listOf(3, 6, 12, 24)
+const val VIDEO_FPS_DEFAULT = 6
+
+/** Videonun gerçek süreye göre kaç kat hızlı olduğu */
+fun videoSpeedOf(fps: Int): Float = fps * TIMELAPSE_INTERVAL_MS / 1000f
+
+/**
  * Yanıp sönen kılavuz: görünür kalma ve kaybolma süreleri (ms).
  * Kılavuz "seconds" saniye görünür, sonra kısa bir an kaybolur (kısa sürelerde daha da kısa).
  */
@@ -249,6 +268,31 @@ fun blinkTimes(seconds: Int): Pair<Long, Long> {
 
 /** Kılavuz renkleri: null = çizimin kendi rengi (siyah) */
 val GuideColors: List<Color?> = listOf(null, Color(0xFFE53935), Color(0xFF1E6FE0), Color(0xFF2E9E4F))
+
+/**
+ * Çizim ekranındaki "Arka plan": çizimin arkasına konan düz zemin (resme bakarak çizmek için).
+ * null = arka plan yok (kamera görüntüsü görünür). Sıra: yok, beyaz, siyah, kırmızı, mavi, yeşil.
+ * Renkli zeminler çizgiler okunsun diye biraz açık tutuldu.
+ */
+val BackgroundColors: List<Color?> = listOf(
+    null, Color.White, Color(0xFF141414), Color(0xFFE57373), Color(0xFF64B5F6), Color(0xFF81C784)
+)
+private const val BACKGROUND_BLACK = 2
+// Renkli zemin → aynı renkteki kılavuz (zeminle aynı renk çizgi görünmez)
+private val BackgroundGuideClash = mapOf(3 to 1, 4 to 2, 5 to 3)
+
+/**
+ * Arka plana göre çizgi rengi: çizgiler her zeminde okunsun.
+ * Siyah zeminde siyah çizgi beyaz olur; zeminle aynı renkteki kılavuz çizimin kendi rengine (siyah) döner.
+ */
+fun guideTintOn(colorIndex: Int, background: Int): Color? {
+    val c = GuideColors.getOrNull(colorIndex)
+    return when {
+        background == BACKGROUND_BLACK -> c ?: Color.White
+        BackgroundGuideClash[background] == colorIndex -> null
+        else -> c
+    }
+}
 
 // ---------------------------------------------------------------------------------------------
 // Çizimler ve kategoriler
@@ -668,6 +712,7 @@ object UserSketches {
 // ---------------------------------------------------------------------------------------------
 // Devam Et: en son açık olan çizim ve o çizimdeki ayarlar (yer, boyut, açı, saydamlık …)
 // Çizim ekranı açıkken değişiklikler kısa aralıklarla buraya yazılır; yeni bir çizim açılınca onunla değişir.
+// Son açtıkların: aynı ayarlar son açılan 12 çizimin her biri için ayrıca tutulur (RecentSettings).
 // Kilit kaydedilmez: telefon kıpırdamış olabilir, kullanıcı hizayı kontrol edip yeniden kilitler.
 // ---------------------------------------------------------------------------------------------
 
@@ -686,7 +731,43 @@ data class LastDrawing(
     val blink: Boolean,
     val handFront: Boolean,
     val hideDrawn: Boolean,
-    val sensitivity: Float
+    val sensitivity: Float,
+    val background: Int = 0   // BackgroundColors sırası; 0 = arka plan yok
+)
+
+private fun LastDrawing.toJson(): JSONObject {
+    val d = this
+    return JSONObject().apply {
+        put("yol", d.path)
+        d.lessonId?.let { put("ders", it) }
+        put("adim", d.lessonStep)
+        put("x", d.x.toDouble()); put("y", d.y.toDouble()); put("w", d.w.toDouble())
+        put("aci", d.rotation.toDouble()); put("ayna", d.mirror)
+        put("saydamlik", d.opacity.toDouble()); put("renk", d.colorIndex)
+        put("izgara", d.grid); put("yanip_sonme", d.blink)
+        put("el_onde", d.handFront); put("cizdiklerimi_gizle", d.hideDrawn)
+        put("hassasiyet", d.sensitivity.toDouble())
+        put("arka_plan", d.background)
+    }
+}
+
+private fun lastDrawingOf(o: JSONObject) = LastDrawing(
+    path = o.getString("yol"),
+    lessonId = if (o.has("ders")) o.optString("ders") else null,
+    lessonStep = o.optInt("adim", 0),
+    x = o.optDouble("x", 0.5).toFloat(),
+    y = o.optDouble("y", 0.5).toFloat(),
+    w = o.optDouble("w", 0.7).toFloat().coerceIn(0.15f, 1.6f),
+    rotation = o.optDouble("aci", 0.0).toFloat(),
+    mirror = o.optBoolean("ayna", false),
+    opacity = o.optDouble("saydamlik", 0.7).toFloat().coerceIn(0.1f, 1f),
+    colorIndex = o.optInt("renk", 0).coerceIn(0, GuideColors.lastIndex),
+    grid = o.optBoolean("izgara", false),
+    blink = o.optBoolean("yanip_sonme", false),
+    handFront = o.optBoolean("el_onde", true),
+    hideDrawn = o.optBoolean("cizdiklerimi_gizle", false),
+    sensitivity = o.optDouble("hassasiyet", 0.0).toFloat().coerceIn(0f, 1f),
+    background = o.optInt("arka_plan", 0).coerceIn(0, BackgroundColors.lastIndex)
 )
 
 object LastSession {
@@ -704,24 +785,7 @@ object LastSession {
         current = runCatching {
             val s = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE).getString(KEY, null)
                 ?: return@runCatching null
-            val o = JSONObject(s)
-            LastDrawing(
-                path = o.getString("yol"),
-                lessonId = if (o.has("ders")) o.optString("ders") else null,
-                lessonStep = o.optInt("adim", 0),
-                x = o.optDouble("x", 0.5).toFloat(),
-                y = o.optDouble("y", 0.5).toFloat(),
-                w = o.optDouble("w", 0.7).toFloat().coerceIn(0.15f, 1.6f),
-                rotation = o.optDouble("aci", 0.0).toFloat(),
-                mirror = o.optBoolean("ayna", false),
-                opacity = o.optDouble("saydamlik", 0.7).toFloat().coerceIn(0.1f, 1f),
-                colorIndex = o.optInt("renk", 0).coerceIn(0, GuideColors.lastIndex),
-                grid = o.optBoolean("izgara", false),
-                blink = o.optBoolean("yanip_sonme", false),
-                handFront = o.optBoolean("el_onde", true),
-                hideDrawn = o.optBoolean("cizdiklerimi_gizle", false),
-                sensitivity = o.optDouble("hassasiyet", 0.0).toFloat().coerceIn(0f, 1f)
-            )
+            lastDrawingOf(JSONObject(s))
         }.getOrNull()
     }
 
@@ -729,18 +793,7 @@ object LastSession {
     fun save(context: Context, v: LastDrawing) {
         if (v == current) return
         current = v
-        val o = JSONObject().apply {
-            put("yol", v.path)
-            v.lessonId?.let { put("ders", it) }
-            put("adim", v.lessonStep)
-            put("x", v.x.toDouble()); put("y", v.y.toDouble()); put("w", v.w.toDouble())
-            put("aci", v.rotation.toDouble()); put("ayna", v.mirror)
-            put("saydamlik", v.opacity.toDouble()); put("renk", v.colorIndex)
-            put("izgara", v.grid); put("yanip_sonme", v.blink)
-            put("el_onde", v.handFront); put("cizdiklerimi_gizle", v.hideDrawn)
-            put("hassasiyet", v.sensitivity.toDouble())
-        }
-        context.getSharedPreferences(PREFS, Context.MODE_PRIVATE).edit().putString(KEY, o.toString()).apply()
+        context.getSharedPreferences(PREFS, Context.MODE_PRIVATE).edit().putString(KEY, v.toJson().toString()).apply()
     }
 
     /** Son çizim silindiyse Devam Et boşa çıkar */
@@ -748,6 +801,47 @@ object LastSession {
         if (current?.path != path) return
         current = null
         context.getSharedPreferences(PREFS, Context.MODE_PRIVATE).edit().remove(KEY).apply()
+    }
+}
+
+/**
+ * Son açtıkların: her çizimin en son bırakıldığı yer, boyut ve ayarlar.
+ * Sadece Kısayollar > "Son açtıkların" listesinden açılınca kullanılır; başka yerden açılan çizim
+ * Ayarlar'daki varsayılanlarla açılır. Liste Library.recents ile aynıdır (en fazla 12 çizim):
+ * listeden düşen çizimin ayarları bir sonraki kayıtta silinir, kayıt hiç büyümez (~5 KB).
+ * Dersler burada tutulmaz (dersler kalınan adımdan devam eder). Kilit kaydedilmez.
+ */
+object RecentSettings {
+    private const val PREFS = "son_ayarlar"
+    private const val KEY = "cizimler"
+    private val byPath = HashMap<String, LastDrawing>()
+    private var ready = false
+
+    fun init(context: Context) {
+        if (ready) return
+        ready = true
+        runCatching {
+            val s = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE).getString(KEY, null) ?: return@runCatching
+            val o = JSONObject(s)
+            for (k in o.keys()) runCatching { byPath[k] = lastDrawingOf(o.getJSONObject(k)) }
+        }
+    }
+
+    /** Son açtıklarındaki bir çizimin kayıtlı ayarları (yoksa null: varsayılanlarla açılır) */
+    fun get(path: String): LastDrawing? = if (path in Library.recents) byPath[path] else null
+
+    /** Çizim ekranı açıkken kısa aralıklarla çağrılır (ana iş parçacığında). Değişmediyse yazmaz. */
+    fun save(context: Context, v: LastDrawing) {
+        if (v.lessonId != null) return
+        val recent = Library.recents.toSet()
+        if (v.path !in recent) return
+        val stale = byPath.keys.any { it !in recent }
+        if (byPath[v.path] == v && !stale) return
+        byPath[v.path] = v
+        byPath.keys.retainAll(recent)
+        val o = JSONObject()
+        byPath.forEach { (k, d) -> o.put(k, d.toJson()) }
+        context.getSharedPreferences(PREFS, Context.MODE_PRIVATE).edit().putString(KEY, o.toString()).apply()
     }
 }
 

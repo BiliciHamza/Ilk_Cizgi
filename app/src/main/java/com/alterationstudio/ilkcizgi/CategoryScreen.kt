@@ -42,7 +42,7 @@ import androidx.compose.ui.unit.sp
 
 /** Bir kategorinin sayfası: üstte renkli başlık ve alt kategori sekmeleri, altta çizimler */
 @Composable
-fun CategoryScreen(category: Category, onBack: () -> Unit, onOpen: (CatalogItem) -> Unit) {
+fun CategoryScreen(category: Category, onBack: () -> Unit, onOpen: (CatalogItem) -> Unit, onPreview: (CatalogItem) -> Unit) {
     // null = "Tümü"
     var selectedSub by rememberSaveable(category.folder) { mutableStateOf<String?>(null) }
     val shown = remember(category, selectedSub) {
@@ -129,7 +129,7 @@ fun CategoryScreen(category: Category, onBack: () -> Unit, onOpen: (CatalogItem)
                 .navigationBarsPadding()
         ) {
             items(shown, key = { it.path }) { item ->
-                DrawingTile(item = item, color = color, onClick = { onOpen(item) })
+                DrawingTile(item = item, color = color, onPreview = { onPreview(item) }, onClick = { onOpen(item) })
             }
         }
     }

@@ -59,8 +59,8 @@ fun HowToScreen(onBack: () -> Unit) {
         }
         item {
             StepCard(2, Ui.Mint, L("Çizim seç", "Pick a drawing"),
-                L("Ana sayfadaki \"Kategoriler\"den bir kategori aç ve çizmek istediğin resme dokun. Aradığını hızlı bulmak için ana sayfadaki arama kutusunu kullan; kategoriye göre de süzebilirsin. ♡ ile favorilerine ekleyebilirsin, Kısayollar sekmesinde bulursun. İstersen \"Kendi fotoğraflarını çizime dönüştür\" ile kendi fotoğrafını çizgilere çevirebilir ya da olduğu gibi kullanabilirsin. Yeni başlıyorsan \"Çizmeyi öğren\" derslerinden başla: önce 1. adımı çiz, \"Sonraki adım\"a basınca yeni çizgiler öncekilerin tam üstüne gelir.",
-                    "Open a category from \"Categories\" on the home screen and tap the picture you want to draw. To find something fast, use the search box on the home screen; you can also filter by category. Tap ♡ to add it to your favourites; you'll find them in the Shortcuts tab. With \"Turn your photos into drawings\" you can turn your own photo into outlines or use it as it is. New to drawing? Start with the \"Learn to draw\" lessons: draw step 1, then tap \"Next step\" and the new lines land right on top of the old ones."))
+                L("Ana sayfadaki \"Kategoriler\"den bir kategori aç. Her çizimin altında iki düğme var: \"Çiz\" kamerayı açıp çizime başlatır, \"Önizle\" kamera açmadan çizime bakmanı sağlar; orada parmaklarınla kaydırıp büyütebilir ve döndürebilir, aynasını, ızgarasını, rengini ve arka planını deneyebilir (göz düğmesi ayarları gizler), sonra \"Çizmeye başla\" ile aynı ayarlarla başlayabilirsin. Aradığını hızlı bulmak için ana sayfadaki arama kutusunu kullan; kategoriye göre de süzebilirsin. ♡ ile favorilerine ekleyebilirsin, Kısayollar sekmesinde bulursun. İstersen \"Kendi fotoğraflarını çizime dönüştür\" ile kendi fotoğrafını çizgilere çevirebilir ya da olduğu gibi kullanabilirsin. Yeni başlıyorsan \"Çizmeyi öğren\" derslerinden başla: önce 1. adımı çiz, \"Sonraki adım\"a basınca yeni çizgiler öncekilerin tam üstüne gelir.",
+                    "Open a category from \"Categories\" on the home screen. Each drawing has two buttons: \"Draw\" opens the camera and starts drawing, \"Preview\" lets you look at it without the camera; there you can move, zoom and rotate it with your fingers and try its mirror, grid, colour and background (the eye button hides the settings), then tap \"Start drawing\" to begin with the same settings. To find something fast, use the search box on the home screen; you can also filter by category. Tap ♡ to add it to your favourites; you'll find them in the Shortcuts tab. With \"Turn your photos into drawings\" you can turn your own photo into outlines or use it as it is. New to drawing? Start with the \"Learn to draw\" lessons: draw step 1, then tap \"Next step\" and the new lines land right on top of the old ones."))
         }
         item {
             StepCard(3, Ui.Violet, L("Telefonu sabitle", "Prop up the phone"),
@@ -82,8 +82,8 @@ fun HowToScreen(onBack: () -> Unit) {
                         .padding(horizontal = 10.dp, vertical = 10.dp),
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
-                    listOf(Glyph.Lock to L("Kilitle", "Lock"), Glyph.Move to L("Konum", "Position"), Glyph.Resize to L("Boyut", "Size"),
-                        Glyph.Opacity to L("Saydamlık", "Opacity"), Glyph.Hand to L("El önde", "Hand")).forEachIndexed { i, (icon, label) ->
+                    listOf(Glyph.Move to L("Konum", "Position"), Glyph.Resize to L("Boyut", "Size"), Glyph.Opacity to L("Saydamlık", "Opacity"),
+                        Glyph.Color to L("Renk", "Colour"), Glyph.Hand to L("El önde", "Hand")).forEachIndexed { i, (icon, label) ->
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
                             Box(
                                 Modifier
@@ -108,6 +108,10 @@ fun HowToScreen(onBack: () -> Unit) {
                     "Opacity: makes the drawing lighter or darker."))
                 PanelRow(Glyph.Color, L("Kılavuz rengi: çizimi kırmızı, mavi ya da yeşil göster; kalem çizginle karışmaz.",
                     "Guide colour: show the drawing in red, blue or green so it doesn't blend with your pencil."))
+                PanelRow(Glyph.Backdrop, L("Arka plan: çizimi beyaz, siyah, kırmızı, mavi ya da yeşil düz zeminde gösterir; resme bakarak çizmek istersen kullanışlı. Siyah zeminde çizgiler beyaz görünür.",
+                    "Background: shows the drawing on a plain white, black, red, blue or green background, handy if you'd rather draw by looking at it. On black, the lines turn white."))
+                PanelRow(Glyph.HideGuide, L("Yansıtmayı gizle: çizimi tamamen gizler, ekranda sadece kâğıdın kalır; çizdiğini kontrol etmek için aç, devam etmek için kapat.",
+                    "Hide guide: hides the drawing completely so you only see your paper; turn it on to check your work, off to carry on."))
                 PanelRow(Glyph.Grid, L("Izgara: çizimin üstüne kareler koyar. Oranları kareler üzerinden kontrol edersin.",
                     "Grid: puts squares over the drawing so you can check proportions square by square."))
                 PanelRow(Glyph.Blink, L("Yanıp sönsün: kılavuz arada bir kaybolur, kendi çizgilerini temiz görürsün. Kaç saniyede bir kaybolacağını Ayarlar'dan belirlersin.",
@@ -118,8 +122,10 @@ fun HowToScreen(onBack: () -> Unit) {
                     "Hide what I've drawn: the guide disappears where you've already drawn, so you can see what's left."))
                 PanelRow(Glyph.Tune, L("Hassasiyet: El önde, Çizdiklerimi gizle ve yüzde için. 0 önerilir: açık kalem izleri de yakalanır, gölgeler el sanılmaz. Artırınca gölgeler de el sayılır, sadece koyu çizgiler fark edilir. Başlangıç değerini Ayarlar'dan seçersin.",
                     "Sensitivity: for Hand in front, Hide what I've drawn and the percentage. 0 is recommended: light pencil marks are caught and shadows aren't mistaken for your hand. Higher values treat shadows as hand and only notice dark lines. Pick the starting value in Settings."))
-                PanelRow(Glyph.Lock, L("Kilitle: konum tuşlarını kapatır, kameranın odağını ve ışığını sabitler, ilerleme yüzdesini saymaya başlar.",
-                    "Lock: disables the position buttons, fixes the camera's focus and exposure, and starts counting your progress."))
+                PanelRow(Glyph.Lock, L("Kilit (ekranın üstünde): konum tuşlarını kapatır, kameranın odağını ve ışığını sabitler, ilerleme yüzdesini saymaya başlar. Yüzde 5 saniyede bir kâğıda yeniden bakılarak hesaplanır.",
+                    "Lock (at the top of the screen): disables the position buttons, fixes the camera's focus and exposure, and starts counting your progress. The percentage is re-checked against the paper every 5 seconds."))
+                PanelRow(Glyph.EyeOff, L("Sade görünüm (kilidin yanındaki göz): ekrandaki her şeyi gizler, sadece kilit ve bu düğme kalır; çizerken ekran tertemiz olur. Tekrar basınca ya da geri tuşuyla hepsi geri gelir.",
+                    "Clean view (the eye next to the lock): hides everything on screen except the lock and this button, so the screen stays clear while you draw. Tap it again or press back to bring it all back."))
                 PanelRow(Glyph.Reset, L("Sıfırla: kilitli değilken çizimi ortaya alır, boyutunu ve açısını baştaki hâline döndürür. Kilitliyken \"Yüzdeyi sıfırla\" olur: çizim yerinde kalır, ilerleme yüzdesi baştan sayılır.",
                     "Reset: when unlocked, centres the drawing and restores its size and angle. When locked it becomes \"Reset %\": the drawing stays put and your progress is counted again from zero."))
             }
@@ -127,8 +133,8 @@ fun HowToScreen(onBack: () -> Unit) {
 
         item {
             StepCard(5, Ui.Rose, L("Kilitle ve çiz", "Lock and draw"),
-                L("Ayarın bitince Kilitle'ye bas ve ekrana bakarak kalemle çizgilerin üstünden geç. Altta ne kadarını çizdiğini yüzde olarak görürsün. Ortam karanlıksa üstteki şimşek düğmesiyle feneri açabilirsin. Çizimden çıksan bile alttaki ortadaki \"Devam Et\" son çizimini aynı yer, boyut ve ayarlarla açar; hizayı kontrol edip yeniden kilitlemen yeter.",
-                    "When it lines up, tap Lock and trace the lines with your pencil while watching the screen. At the bottom you'll see how much you've drawn as a percentage. If it's dark, turn on the torch with the lightning button at the top. Even after you leave, \"Continue\" in the middle of the bottom bar opens your last drawing with the same position, size and settings; just check the alignment and lock again."))
+                L("Ayarın bitince üstteki kilit düğmesine bas ve ekrana bakarak kalemle çizgilerin üstünden geç. Altta ne kadarını çizdiğini yüzde olarak görürsün. Ekranı sadeleştirmek için kilidin yanındaki göz düğmesine bas. Ortam karanlıksa üstteki şimşek düğmesiyle feneri açabilirsin. Çizimden çıksan bile alttaki ortadaki \"Devam Et\" son çizimini aynı yer, boyut ve ayarlarla açar; Kısayollar'daki \"Son açtıkların\"dan açtığın çizimler de en son bıraktığın gibi gelir. Hizayı kontrol edip yeniden kilitlemen yeter.",
+                    "When it lines up, tap the lock at the top and trace the lines with your pencil while watching the screen. At the bottom you'll see how much you've drawn as a percentage. Tap the eye next to the lock for a clean screen. If it's dark, turn on the torch with the lightning button at the top. Even after you leave, \"Continue\" in the middle of the bottom bar opens your last drawing with the same position, size and settings, and drawings you open from \"Recent\" in Shortcuts come back just as you left them. Just check the alignment and lock again."))
         }
 
         // Ekstra araçlar
@@ -137,12 +143,12 @@ fun HowToScreen(onBack: () -> Unit) {
                 L("Çizimini saklamanın iki yolu var. Hepsi Çizimlerim sekmesinde önce ve sonra hâliyle durur.",
                     "There are two ways to keep your drawing. Everything stays in the My art tab, as before and after.")) {
                 Spacer(Modifier.height(12.dp))
-                PanelRow(Glyph.Record, L("Hızlandırılmış video: çizerken üstteki kırmızı kayıt düğmesine bas, bitince kare durdur düğmesiyle durdur. Video galeriye de kaydedilir.",
-                    "Time-lapse: tap the red record button at the top while you draw, then the square stop button. The video is also saved to your gallery."))
+                PanelRow(Glyph.Record, L("Hızlandırılmış video: çizerken üstteki kırmızı kayıt düğmesine bas, bitince kare durdur düğmesiyle durdur. Video galeriye de kaydedilir; Çizimlerim'de uygulamanın içinde istediğin hızda (0,25×–2×) izlersin. Kaydedilen videonun hızını Ayarlar'dan seçersin.",
+                    "Time-lapse: tap the red record button at the top while you draw, then the square stop button. The video is also saved to your gallery; watch it in My art inside the app at the speed you like (0.25×–2×). Pick the saved video's speed in Settings."))
                 PanelRow(Glyph.Camera, L("Fotoğraf: alttaki kamera düğmesiyle kâğıdının fotoğrafını çek. Çizim bitince bu düğme yeşil yanar.",
                     "Photo: tap the camera button at the bottom to photograph your paper. It lights up green when you're nearly done."))
-                PanelRow("✏️ %", L("İlerleme: kilitliyken kalem izlerini sayar. Çok açık çizgiler sayılmayabilir.",
-                    "Progress: counts your pencil marks while locked. Very light lines may not count."))
+                PanelRow("✏️ %", L("İlerleme: kilitliyken kalem izlerini sayar ve 5 saniyede bir baştan hesaplar. Telefon kayar ya da gölge düşerse yanlış sayılan yerler kendiliğinden düşer. Çok açık çizgiler sayılmayabilir.",
+                    "Progress: counts your pencil marks while locked and recalculates every 5 seconds. If the phone slips or a shadow falls, wrongly counted spots drop out on their own. Very light lines may not count."))
             }
         }
 

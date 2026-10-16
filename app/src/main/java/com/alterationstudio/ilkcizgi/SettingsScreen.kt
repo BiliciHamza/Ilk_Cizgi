@@ -151,6 +151,29 @@ fun SettingsScreen(lang: Lang, onLangChange: (Lang) -> Unit, onShowIntro: () -> 
                         )
                     }
                 }
+                Spacer(Modifier.height(12.dp))
+                // Arka plan: çizimin arkasına düz zemin (ilki "yok": kamera görünür)
+                Text(L("Arka plan", "Background"), color = Ui.Ink, fontSize = 15.sp, fontWeight = FontWeight.Medium)
+                Spacer(Modifier.height(8.dp))
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    BackgroundColors.forEachIndexed { i, c ->
+                        val sel = prefs.background == i
+                        Box(
+                            Modifier
+                                .size(38.dp)
+                                .clip(CircleShape)
+                                .border(2.5.dp, if (sel) Ui.deep(Ui.Mint, 0.45f) else Color.Transparent, CircleShape)
+                                .padding(5.dp)
+                                .clip(CircleShape)
+                                .background(c ?: Color.Transparent)
+                                .border(1.dp, Ui.InkMuted.copy(alpha = 0.5f), CircleShape)
+                                .clickable { update(prefs.copy(background = i)) },
+                            contentAlignment = Alignment.Center
+                        ) {
+                            if (c == null) ToolIcon(Glyph.Close, Ui.InkMuted, size = 16.dp)
+                        }
+                    }
+                }
                 Spacer(Modifier.height(8.dp))
                 SettingSwitch(L("El önde", "Hand in front"),
                     L("Elin ve kalemin çizimin üstünde görünür", "Your hand and pencil show above the drawing"),
@@ -254,6 +277,25 @@ fun SettingsScreen(lang: Lang, onLangChange: (Lang) -> Unit, onShowIntro: () -> 
                         modifier = Modifier.padding(top = 6.dp)
                     )
                 }
+                // Kaydedilen hızlandırılmış videonun hızı
+                Spacer(Modifier.height(14.dp))
+                Text(L("Kaydedilen video hızı", "Saved video speed"), color = Ui.Ink, fontSize = 15.sp, fontWeight = FontWeight.Medium)
+                Text(L("Hızlandırılmış video gerçek süreden kaç kat hızlı olsun", "How many times faster than real time the time-lapse is"),
+                    color = Ui.InkMuted, fontSize = 12.sp, lineHeight = 16.sp)
+                Spacer(Modifier.height(8.dp))
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    VIDEO_FPS_OPTIONS.forEach { fps ->
+                        ChoiceChip("~${videoSpeedOf(fps).roundToInt()}×", prefs.videoFps == fps, Ui.Mint, Modifier.weight(1f)) {
+                            update(prefs.copy(videoFps = fps))
+                        }
+                    }
+                }
+                // Örnek: 10 dakikalık çizim kaç saniyelik video olur
+                val sample = (600f / videoSpeedOf(prefs.videoFps)).roundToInt()
+                Text(
+                    L("10 dakikalık çizim ≈ ${sample / 60} dk ${sample % 60} sn video", "A 10-minute drawing ≈ ${sample / 60} min ${sample % 60} s of video"),
+                    color = Ui.InkMuted, fontSize = 12.sp, modifier = Modifier.padding(top = 6.dp)
+                )
                 Spacer(Modifier.height(12.dp))
                 // Varsayılana dön: kutu içinde, tam genişlikte, kolay basılır
                 Box(

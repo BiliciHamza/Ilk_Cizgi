@@ -73,8 +73,9 @@ fun maskRows(viewW: Int, viewH: Int) = max(1, (MASK_W.toLong() * viewH / viewW).
  * Bir karenin sonucu.
  * mask: çizimin görüneceği yerler (alfa), null ise maske yok.
  * ink: kâğıtta kalemle çizilmiş hücreler (ilerleme yüzdesi için), null ise bakılmadı.
+ * hand: elin kapattığı hücreler (ilerleme yüzdesi için: elin altındaki çizgiler o an görünmez, silinmiş sayılmaz).
  */
-class MaskResult(val mask: Bitmap?, val ink: BooleanArray?, val cols: Int, val rows: Int)
+class MaskResult(val mask: Bitmap?, val ink: BooleanArray?, val hand: BooleanArray?, val cols: Int, val rows: Int)
 
 /**
  * Çizimin nerede görüneceğini belirleyen maske (alfa = görünürlük).
@@ -151,7 +152,9 @@ class TraceMasker {
         // --- 2) El: kâğıt gibi görünmeyen BÜYÜK lekeler ---
         val minY = ref * (0.55f + 0.30f * sensitivity) // hassasiyet arttıkça daha çok yer (gölge dahil) "el" sayılır
         val maxRed = (22 - 12 * sensitivity).toInt()     // ten rengi kırmızımsıdır (Cr yüksek)
-        if (handFront) {
+        // Kilitliyken (ilerleme sayılırken) el her zaman bulunur: elin altındaki çizgiler silinmiş sanılmasın.
+        // Maskede ise el sadece "El önde" açıkken kullanılır.
+        if (handFront || detectInk) {
             for (k in 0 until n) {
                 val paper = yAvg[k] >= minY && (vs[k] - 128) < maxRed && abs(us[k] - 128) < 30
                 handRaw[k] = !paper
@@ -208,7 +211,7 @@ class TraceMasker {
         // --- 4) Maske + titremesin diye yumuşatma ---
         val mask = if (handFront || hideDrawn) {
             for (k in 0 until n) {
-                val visible = !(hand[k] || (hideDrawn && ink[k]))
+                val visible = !((handFront && hand[k]) || (hideDrawn && ink[k]))
                 val v = prev[k] * 0.35f + (if (visible) 0.65f else 0f)
                 prev[k] = v
                 alpha[k] = (v * 255).toInt()
@@ -229,7 +232,12 @@ class TraceMasker {
             prev.fill(1f)
             null
         }
-        return MaskResult(mask, if (detectInk) ink.copyOf() else null, w, h)
+        return MaskResult(
+            mask,
+            if (detectInk) ink.copyOf() else null,
+            if (detectInk) hand.copyOf() else null,
+            w, h
+        )
     }
 
     /** src'deki işaretli hücreleri r hücre büyütüp dst'ye yazar (önce yatay, sonra dikey) */

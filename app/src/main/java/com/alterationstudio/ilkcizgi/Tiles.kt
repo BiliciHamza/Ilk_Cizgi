@@ -6,6 +6,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -13,6 +14,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -113,10 +115,20 @@ fun HeartButton(path: String, modifier: Modifier = Modifier, size: Dp = 32.dp) {
     }
 }
 
-/** Kareli kâğıt üstünde çizim kartı. Kategori renginde ince bir çerçeve ve favori kalbi taşır. */
+/**
+ * Kareli kâğıt üstünde çizim kartı. Kategori renginde ince bir çerçeve ve favori kalbi taşır.
+ * onPreview verilirse altta yan yana iki düğme çıkar: "Çiz" (onClick, çizim ekranı) ve "Önizle" (kamerasız önizleme).
+ * Kartın kendisine dokunmak yine çizim ekranını açar.
+ */
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun DrawingTile(item: CatalogItem, color: Color, onLongClick: (() -> Unit)? = null, onClick: () -> Unit) {
+fun DrawingTile(
+    item: CatalogItem,
+    color: Color,
+    onLongClick: (() -> Unit)? = null,
+    onPreview: (() -> Unit)? = null,
+    onClick: () -> Unit
+) {
     val name = L(item.name, item.nameEn)
     val info = rememberThumb(item.path)
     Column(
@@ -167,5 +179,32 @@ fun DrawingTile(item: CatalogItem, color: Color, onLongClick: (() -> Unit)? = nu
                 modifier = Modifier.weight(1f)
             )
         }
+        if (onPreview != null) {
+            Row(
+                Modifier
+                    .fillMaxWidth()
+                    .padding(start = 8.dp, end = 8.dp, bottom = 9.dp),
+                horizontalArrangement = Arrangement.spacedBy(6.dp)
+            ) {
+                TileAction(L("Çiz", "Draw"), filled = true, color = color, modifier = Modifier.weight(1f), onClick = onClick)
+                TileAction(L("Önizle", "Preview"), filled = false, color = color, modifier = Modifier.weight(1f), onClick = onPreview)
+            }
+        }
+    }
+}
+
+/** Kartın altındaki küçük düğme (Çiz dolu, Önizle çerçeveli) */
+@Composable
+private fun TileAction(label: String, filled: Boolean, color: Color, modifier: Modifier, onClick: () -> Unit) {
+    Box(
+        modifier
+            .height(34.dp)
+            .clip(RoundedCornerShape(12.dp))
+            .background(if (filled) Ui.tint(color, 0.5f) else Color.Transparent)
+            .border(1.5.dp, Ui.tint(color, 0.5f), RoundedCornerShape(12.dp))
+            .clickable(onClick = onClick),
+        contentAlignment = Alignment.Center
+    ) {
+        Text(label, color = Ui.deep(color, 0.45f), fontSize = 13.sp, fontWeight = FontWeight.Bold, maxLines = 1, softWrap = false)
     }
 }

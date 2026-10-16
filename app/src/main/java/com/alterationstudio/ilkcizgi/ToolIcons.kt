@@ -27,11 +27,13 @@ import kotlin.math.sin
 
 enum class Glyph {
     // Araç çubuğu
-    Lock, Unlock, Move, Resize, Opacity, Color, Hand, HideLines, Tune, Grid, Blink, Mirror, Reset,
+    Lock, Unlock, Move, Resize, Opacity, Color, Hand, HideLines, Tune, Grid, Blink, Mirror, Reset, Backdrop, HideGuide,
     // Genel: geri, kayıt, durdur, fener, favori, yardım, kamera, fikir, arama, kapat, saat, resim
     Back, Record, Stop, Torch, Heart, HeartFilled, Help, Camera, Bulb, Search, Close, Clock, Picture,
-    // Devam Et (oynat üçgeni)
-    Resume
+    // Devam Et / oynat (üçgen), duraklat (iki çubuk)
+    Resume, Pause,
+    // Çizim ekranı: ekranı sadeleştir (göz üstü çizili) / öğeleri geri getir (göz)
+    EyeOff, Eye
 }
 
 @Composable
@@ -158,6 +160,22 @@ fun ToolIcon(glyph: Glyph, color: Color, modifier: Modifier = Modifier, size: Dp
                 drawPath(left, color, style = stroke)
                 drawPath(right, color)
             }
+            Glyph.HideGuide -> {
+                // Yansıtmayı gizle: resim çerçevesi (dağ) ve üstünden geçen çapraz çizgi
+                drawRoundRect(color, p(0.12f, 0.2f), Size(0.76f * s, 0.6f * s), CornerRadius(0.08f * s), style = stroke)
+                val hill = Path().apply {
+                    moveTo(0.22f * s, 0.7f * s)
+                    lineTo(0.42f * s, 0.48f * s)
+                    lineTo(0.58f * s, 0.62f * s)
+                }
+                drawPath(hill, color, style = stroke)
+                line(0.1f, 0.1f, 0.9f, 0.9f)
+            }
+            Glyph.Backdrop -> {
+                // Arka plan: önde çerçeve (çizim), arkasında dolu zemin
+                drawRoundRect(color, p(0.1f, 0.1f), Size(0.52f * s, 0.52f * s), CornerRadius(0.08f * s))
+                drawRoundRect(color, p(0.38f, 0.38f), Size(0.52f * s, 0.52f * s), CornerRadius(0.08f * s), style = stroke)
+            }
             Glyph.Back -> {
                 // Sola ok
                 line(0.82f, 0.5f, 0.2f, 0.5f)
@@ -253,6 +271,22 @@ fun ToolIcon(glyph: Glyph, color: Color, modifier: Modifier = Modifier, size: Dp
                     lineTo(0.84f * s, 0.76f * s)
                 }
                 drawPath(hill, color, style = stroke)
+            }
+            Glyph.Eye, Glyph.EyeOff -> {
+                // Badem göz ve göz bebeği; EyeOff'ta üstünden çapraz çizgi
+                val eye = Path().apply {
+                    moveTo(0.08f * s, 0.5f * s)
+                    quadraticTo(0.5f * s, 0.08f * s, 0.92f * s, 0.5f * s)
+                    quadraticTo(0.5f * s, 0.92f * s, 0.08f * s, 0.5f * s)
+                    close()
+                }
+                drawPath(eye, color, style = stroke)
+                drawCircle(color, 0.12f * s, p(0.5f, 0.5f))
+                if (glyph == Glyph.EyeOff) line(0.16f, 0.16f, 0.84f, 0.84f)
+            }
+            Glyph.Pause -> {
+                drawRoundRect(color, p(0.24f, 0.2f), Size(0.17f * s, 0.6f * s), CornerRadius(0.05f * s))
+                drawRoundRect(color, p(0.59f, 0.2f), Size(0.17f * s, 0.6f * s), CornerRadius(0.05f * s))
             }
             Glyph.Resume -> {
                 // Yuvarlak köşeli oynat üçgeni

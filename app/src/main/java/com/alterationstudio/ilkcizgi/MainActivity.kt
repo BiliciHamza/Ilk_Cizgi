@@ -36,6 +36,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -95,6 +96,7 @@ fun AppRoot() {
         UserSketches.init(context)
         Works.init(context)
         LastSession.init(context)
+        RecentSettings.init(context)
         // Önceki açılışta yarım kalmış video kayıtlarının geçici dosyalarını temizle (süreç başına bir kere)
         cleanStaleTimelapse(context)
         true
@@ -145,19 +147,62 @@ fun AppRoot() {
     var showHelp by rememberSaveable { mutableStateOf(false) }
     // Devam Et ile mi açıldı? Öyleyse çizim son kaydedilen yer, boyut ve ayarlarla açılır
     var resume by rememberSaveable { mutableStateOf(false) }
+    // Son açtıkların listesinden mi açıldı? Öyleyse o çizimin en son bırakıldığı ayarlarla açılır
+    var fromRecent by rememberSaveable { mutableStateOf(false) }
+    // Önizle: kamerasız önizleme ekranındaki çizim (ve Son açtıklarından açıldıysa onun ayarları)
+    var previewPath by rememberSaveable { mutableStateOf<String?>(null) }
+    var previewFromRecent by rememberSaveable { mutableStateOf(false) }
+    // Önizlemede "Çizmeye başla" ile seçilen ayarlar: çizim ekranı bunlarla açılır
+    var previewStart by remember { mutableStateOf<LastDrawing?>(null) }
     val lesson = lessons.firstOrNull { it.id == lessonId }
 
     val category = categories.firstOrNull { it.folder == categoryFolder }
     val drawing = drawingPath?.let(lookup)
+    val preview = previewPath?.let(lookup)
 
     fun openDrawing(path: String) {
         Library.addRecent(context, path)
         resume = false
+        fromRecent = false
+        previewStart = null
         drawingPath = path
     }
 
+    /** Son açtıklarından: çizim en son bıraktığın yer, boyut ve ayarlarla açılır (kayıt yoksa varsayılanlarla) */
+    fun openRecent(path: String) {
+        resume = false
+        fromRecent = true
+        previewStart = null
+        drawingPath = path
+        Library.addRecent(context, path)
+    }
+
+    /** Önizle: kamera açılmadan bakılır (son açtıklarına eklenmez; çizmeye başlayınca eklenir) */
+    fun openPreview(path: String, recent: Boolean) {
+        previewFromRecent = recent
+        previewPath = path
+    }
+
+    /** Önizlemeden "Çizmeye başla": çizim ekranı önizlemedeki ayarlarla açılır */
+    fun startFromPreview(d: LastDrawing) {
+        Library.addRecent(context, d.path)
+        resume = false
+        fromRecent = false
+        previewStart = d
+        previewPath = null
+        drawingPath = d.path
+    }
+
     // Son kaydedilen durum, çizim açıldığı anda bir kere alınır (sonraki kayıtlar açık çizimi etkilemez)
-    val resumeState = remember(resume, drawingPath, lessonId) { if (resume) LastSession.current else null }
+    val resumeState = remember(resume, fromRecent, drawingPath, lessonId, previewStart) {
+        val fromPreview = previewStart
+        when {
+            fromPreview != null && fromPreview.path == drawingPath -> fromPreview
+            resume -> LastSession.current
+            fromRecent -> drawingPath?.let { RecentSettings.get(it) }
+            else -> null
+        }
+    }
 
     /** Ortadaki Devam Et: en son çizimi aynı yer, boyut ve ayarlarla açar */
     fun resumeLast() {
@@ -180,6 +225,8 @@ fun AppRoot() {
         }
         Library.addRecent(context, last.path)
         resume = true
+        fromRecent = false
+        previewStart = null
         drawingPath = last.path
     }
 
@@ -245,6 +292,24 @@ fun AppRoot() {
                     resume = resumeState?.takeIf { it.path == drawing.first.path }
                 )
             }
+            // Önizle: kategori / arama / kısayolların üstünde açılır, geri ile listeye dönülür
+            preview != null -> {
+                BackHandler { previewPath = null }
+                val path = preview.first.path
+                val previewInit = remember(path, previewFromRecent) {
+                    if (previewFromRecent) RecentSettings.get(path) else null
+                }
+                // Başka bir çizimin önizlemesine geçilirse ayarlar baştan kurulsun
+                key(path) {
+                    PreviewScreen(
+                        drawing = preview.first,
+                        color = preview.second,
+                        start = previewInit,
+                        onBack = { previewPath = null },
+                        onStart = { startFromPreview(it) }
+                    )
+                }
+            }
             photoFlow -> {
                 BackHandler { photoFlow = false }
                 PhotoSketchScreen(
@@ -259,7 +324,8 @@ fun AppRoot() {
                     CategoryScreen(
                         category = category,
                         onBack = { categoryFolder = null },
-                        onOpen = { openDrawing(it.path) }
+                        onOpen = { openDrawing(it.path) },
+                        onPreview = { openPreview(it.path, false) }
                     )
                 }
             }
@@ -283,6 +349,7 @@ fun AppRoot() {
                         val done = Library.lessonDone[l.id] ?: 0
                         lessonStep = if (done >= l.steps.size) 0 else done
                         resume = false
+                        fromRecent = false
                         lessonId = l.id
                     }
                 ) }
@@ -295,7 +362,8 @@ fun AppRoot() {
                     SearchScreen(
                         categories = categories,
                         onBack = closeSearch,
-                        onOpenDrawing = { openDrawing(it) }
+                        onOpenDrawing = { openDrawing(it) },
+                        onPreviewDrawing = { openPreview(it, false) }
                     )
                 }
             }
@@ -307,7 +375,9 @@ fun AppRoot() {
                         section = sec,
                         lookup = lookup,
                         onBack = { homeSection = null },
-                        onOpenDrawing = { openDrawing(it) }
+                        onOpenDrawing = { openDrawing(it) },
+                        onOpenRecent = { openRecent(it) },
+                        onPreview = { p, recent -> openPreview(p, recent) }
                     )
                 }
             }
@@ -322,7 +392,12 @@ fun AppRoot() {
                         screens.SaveableStateProvider("sekme:$tab") {
                         when (tab) {
                             TAB_WORKS -> WorksScreen(onDraw = { tab = TAB_DRAWINGS })
-                            TAB_SHORTCUTS -> ShortcutsScreen(lookup = lookup, onOpenDrawing = { openDrawing(it) })
+                            TAB_SHORTCUTS -> ShortcutsScreen(
+                                lookup = lookup,
+                                onOpenDrawing = { openDrawing(it) },
+                                onOpenRecent = { openRecent(it) },
+                                onPreview = { p, recent -> openPreview(p, recent) }
+                            )
                             TAB_SETTINGS -> SettingsScreen(
                                 lang = lang,
                                 onLangChange = { lang = it; Settings.setLang(context, it) },

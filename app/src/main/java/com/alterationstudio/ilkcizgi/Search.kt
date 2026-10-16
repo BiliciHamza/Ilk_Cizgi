@@ -74,7 +74,8 @@ private class SearchEntry(val item: CatalogItem, val color: Color, val category:
 fun SearchScreen(
     categories: List<Category>,
     onBack: () -> Unit,
-    onOpenDrawing: (String) -> Unit
+    onOpenDrawing: (String) -> Unit,
+    onPreviewDrawing: (String) -> Unit
 ) {
     val focus = LocalFocusManager.current
     var query by rememberSaveable { mutableStateOf("") }
@@ -212,7 +213,10 @@ fun SearchScreen(
                     .navigationBarsPadding()
             ) {
                 items(results, key = { it.item.path }) { e ->
-                    DrawingTile(item = e.item, color = e.color, onClick = {
+                    DrawingTile(item = e.item, color = e.color, onPreview = {
+                        focus.clearFocus()
+                        onPreviewDrawing(e.item.path)
+                    }, onClick = {
                         focus.clearFocus()
                         onOpenDrawing(e.item.path)
                     })

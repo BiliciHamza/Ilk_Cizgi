@@ -40,13 +40,13 @@ import kotlin.math.min
 /** Ekran kapansa da işi bitirmesi gereken arka plan işleri için (ör. videoyu kaydetmek) */
 val appScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
 
-const val TIMELAPSE_FPS = 12
-const val TIMELAPSE_INTERVAL_MS = 1200L
+const val TIMELAPSE_INTERVAL_MS = 1200L // kare alma aralığı; video hızı = fps × 1,2 (fps Ayarlar'dan, VIDEO_FPS_OPTIONS)
 private const val MAX_FRAMES = 600        // bu sayıya gelince kareler seyreltilir
 private const val TARGET_W = 720
 private const val MAX_H = 1280
 
-class TimelapseRecorder(context: Context) {
+/** fps: videonun saniyedeki kare sayısı (Ayarlar > Varsayılan ayarlar > Kaydedilen video hızı) */
+class TimelapseRecorder(context: Context, private val fps: Int = VIDEO_FPS_DEFAULT) {
     private val appContext = context.applicationContext
     private val id = System.nanoTime()
     private val dir = File(appContext.cacheDir, "timelapse_$id").apply { deleteRecursively(); mkdirs() }
@@ -124,7 +124,7 @@ class TimelapseRecorder(context: Context) {
             return@withContext null
         }
         val out = File(appContext.cacheDir, "timelapse_$id.mp4")
-        val ok = runCatching { encodeMp4(frames, outW, outH, out, onProgress) }.getOrDefault(false)
+        val ok = runCatching { encodeMp4(frames, outW, outH, out, fps, onProgress) }.getOrDefault(false)
         dir.deleteRecursively()
         val uri = if (ok) saveVideoToGallery(appContext, out) else null
         out.delete()
@@ -162,8 +162,7 @@ private fun cropScale(src: Bitmap, w: Int, h: Int): Bitmap {
 }
 
 /** JPEG karelerden H.264 MP4 üretir. Son kare 1 saniye ekranda kalır. */
-private fun encodeMp4(frames: List<File>, w: Int, h: Int, out: File, onProgress: (Float) -> Unit): Boolean {
-    val fps = TIMELAPSE_FPS
+private fun encodeMp4(frames: List<File>, w: Int, h: Int, out: File, fps: Int, onProgress: (Float) -> Unit): Boolean {
     val hold = fps // son kare 1 sn
     val total = frames.size + hold
     val format = MediaFormat.createVideoFormat(MediaFormat.MIMETYPE_VIDEO_AVC, w, h).apply {
