@@ -41,7 +41,7 @@ fun HowToScreen(onBack: () -> Unit) {
   ) {
     SectionHeader(
         L("Nasıl kullanılır", "How to use"),
-        L("5 adımda ilk çizimini kâğıda geçir, sonra sakla.", "Get your first drawing onto paper in 5 steps, then keep it."),
+        L("6 adımda ilk çizimini kâğıda geçir ve sakla.", "Get your first drawing onto paper and keep it in 6 steps."),
         Ui.Mint, onBack
     )
     LazyColumn(
@@ -120,8 +120,8 @@ fun HowToScreen(onBack: () -> Unit) {
                     "Hand in front: your hand and pencil show above the drawing."))
                 PanelRow(Glyph.HideLines, L("Çizdiklerimi gizle: kalemle çizdiğin yerlerde kılavuz kaybolur, neyin kaldığını kolayca görürsün.",
                     "Hide what I've drawn: the guide disappears where you've already drawn, so you can see what's left."))
-                PanelRow(Glyph.Tune, L("Hassasiyet: El önde, Çizdiklerimi gizle ve yüzde için. 0 önerilir: açık kalem izleri de yakalanır, gölgeler el sanılmaz. Artırınca gölgeler de el sayılır, sadece koyu çizgiler fark edilir. Başlangıç değerini Ayarlar'dan seçersin.",
-                    "Sensitivity: for Hand in front, Hide what I've drawn and the percentage. 0 is recommended: light pencil marks are caught and shadows aren't mistaken for your hand. Higher values treat shadows as hand and only notice dark lines. Pick the starting value in Settings."))
+                PanelRow(Glyph.Tune, L("Hassasiyet: El önde, Çizdiklerimi gizle ve yüzde için. En sol (\"Açık kalem izlerini de say\") önerilir: açık kalem izleri de sayılır, gölgeler el sanılmaz. Sağa (\"Gölgeleri de el say\") gittikçe gölgeler de el sayılır, sadece koyu çizgiler fark edilir. Başlangıç değerini Ayarlar'dan seçersin.",
+                    "Sensitivity: for Hand in front, Hide what I've drawn and the percentage. Far left (\"Count light pencil marks\") is recommended: light pencil marks count and shadows aren't mistaken for your hand. Further right (\"Treat shadows as hand\") treats shadows as hand and only notices dark lines. Pick the starting value in Settings."))
                 PanelRow(Glyph.Lock, L("Kilit (ekranın üstünde): konum tuşlarını kapatır, kameranın odağını ve ışığını sabitler, ilerleme yüzdesini saymaya başlar. Yüzde 5 saniyede bir kâğıda yeniden bakılarak hesaplanır.",
                     "Lock (at the top of the screen): disables the position buttons, fixes the camera's focus and exposure, and starts counting your progress. The percentage is re-checked against the paper every 5 seconds."))
                 PanelRow(Glyph.EyeOff, L("Sade görünüm (kilidin yanındaki göz): ekrandaki her şeyi gizler, sadece kilit ve bu düğme kalır; çizerken ekran tertemiz olur. Tekrar basınca ya da geri tuşuyla hepsi geri gelir.",
@@ -161,13 +161,13 @@ fun HowToScreen(onBack: () -> Unit) {
         }
         item {
             TipCard(L("Çizdiğim yerler gizlenmiyor", "What I've drawn doesn't hide"),
-                L("Alttaki araç çubuğunda \"Çizdiklerimi gizle\" açık olsun. \"Hassasiyet\" 0'da olsun (önerilen); artırınca açık çizgiler fark edilmez. Kaleme biraz daha bastır ya da daha koyu bir kalem kullan, ortamı aydınlat.",
-                    "Make sure \"Hide my lines\" is on in the bottom toolbar. Keep \"Sensitivity\" at 0 (recommended); higher values miss light lines. Press a bit harder or use a darker pencil, and add light."))
+                L("Alttaki araç çubuğunda \"Çizdiklerimi gizle\" açık olsun. \"Hassasiyet\" en solda olsun (önerilen); sağa gittikçe açık çizgiler fark edilmez. Kaleme biraz daha bastır ya da daha koyu bir kalem kullan, ortamı aydınlat.",
+                    "Make sure \"Hide my lines\" is on in the bottom toolbar. Keep \"Sensitivity\" at the far left (recommended); further right misses light lines. Press a bit harder or use a darker pencil, and add light."))
         }
         item {
             TipCard(L("Elimin üstünde çizim görünüyor", "The drawing shows on top of my hand"),
-                L("Alttaki araç çubuğunda \"El önde\" açık olsun ve ortamı aydınlat. Hâlâ görünüyorsa \"Hassasiyet\"i biraz artır; gölgeli yerlerde çizim kaybolmaya başlarsa ya da çizdiklerin gizlenmezse yeniden 0'a al.",
-                    "Turn on \"Hand in front\" in the bottom toolbar and add light. If it still shows, raise \"Sensitivity\" a little; if the drawing starts vanishing in shadows or your lines stop hiding, set it back to 0."))
+                L("Alttaki araç çubuğunda \"El önde\" açık olsun ve ortamı aydınlat. Hâlâ görünüyorsa \"Hassasiyet\"i biraz sağa al; gölgeli yerlerde çizim kaybolmaya başlarsa ya da çizdiklerin gizlenmezse yeniden en sola al.",
+                    "Turn on \"Hand in front\" in the bottom toolbar and add light. If it still shows, move \"Sensitivity\" a little to the right; if the drawing starts vanishing in shadows or your lines stop hiding, move it back to the far left."))
         }
         item {
             TipCard(L("Çizim kâğıttan kaydı", "The drawing slipped off the paper"),

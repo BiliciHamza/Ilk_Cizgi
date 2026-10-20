@@ -887,7 +887,7 @@ fun loadLessons(context: Context): List<Lesson> {
         val stepsJson = o.optJSONArray("adimlar") ?: continue
         val raw = mutableListOf<Pair<String, JSONObject?>>()
         for (j in 0 until stepsJson.length()) {
-            // Adım ya sadece dosya yolu ("anatomi/eller/basit_el_1.webp") ya da {yol, x, y, w}
+            // Adım ya sadece dosya yolu ("insan/eller/basit_el_1.webp") ya da {yol, x, y, w}
             val so = stepsJson.optJSONObject(j)
             val path = so?.optString("yol") ?: stepsJson.optString(j)
             if (path.isNullOrBlank() || !exists(path)) continue

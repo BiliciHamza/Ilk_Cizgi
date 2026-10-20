@@ -2,7 +2,7 @@
   "_aciklama": "Kategori ve çizim adları. ad = Türkçe, ad_en = İngilizce, renk = kategori rengi. Yeni klasör eklersen burada yazmasan da görünür.",
   "kategoriler": [
     {
-      "klasor": "geometrik",
+      "klasor": "kolay",
       "ad": "Kolay çizimler",
       "ad_en": "Easy drawings",
       "renk": "#7CC6E8",
@@ -20,7 +20,7 @@
       ]
     },
     {
-      "klasor": "anatomi",
+      "klasor": "insan",
       "ad": "İnsan",
       "alt": [
         {
@@ -93,7 +93,7 @@
       "renk": "#FFCC4D"
     },
     {
-      "klasor": "dovme",
+      "klasor": "karanlik",
       "ad": "Karanlık",
       "ad_en": "Dark",
       "renk": "#8C93A8"
@@ -237,7 +237,7 @@
     "yuz_duzlemleri": "Head planes",
     "zurafa": "Giraffe"
   },
-  "_dersler_aciklama": "Çizmeyi öğren dersleri. Her ders sırayla çizilen adımlardan oluşur. Yeni ders eklemek için adimlar listesine dosya yollarını sırayla yazman yeterli, ör. \"adimlar\": [\"anatomi/gozler/goz_1.webp\", \"anatomi/gozler/goz_2.webp\"]. Adım resimleri aynı boyutta olursa üst üste tam oturur. oran = resmin yüksekliği / genişliği.",
+  "_dersler_aciklama": "Çizmeyi öğren dersleri. Her ders sırayla çizilen adımlardan oluşur. Yeni ders eklemek için adimlar listesine dosya yollarını sırayla yazman yeterli, ör. \"adimlar\": [\"insan/gozler/goz_1.webp\", \"insan/gozler/goz_2.webp\"]. Adım resimleri aynı boyutta olursa üst üste tam oturur. oran = resmin yüksekliği / genişliği.",
   "dersler": [
     {
       "id": "geo_kup",
@@ -246,9 +246,9 @@
       "renk": "#7CC6E8",
       "oran": 1.0,
       "adimlar": [
-        "geometrik/uc_boyutlu/kup_adim_1.webp",
-        "geometrik/uc_boyutlu/kup_adim_2.webp",
-        "geometrik/uc_boyutlu/kup_adim_3.webp"
+        "kolay/uc_boyutlu/kup_adim_1.webp",
+        "kolay/uc_boyutlu/kup_adim_2.webp",
+        "kolay/uc_boyutlu/kup_adim_3.webp"
       ]
     },
     {
@@ -258,9 +258,9 @@
       "renk": "#7CC6E8",
       "oran": 1.0,
       "adimlar": [
-        "geometrik/uc_boyutlu/silindir_adim_1.webp",
-        "geometrik/uc_boyutlu/silindir_adim_2.webp",
-        "geometrik/uc_boyutlu/silindir_adim_3.webp"
+        "kolay/uc_boyutlu/silindir_adim_1.webp",
+        "kolay/uc_boyutlu/silindir_adim_2.webp",
+        "kolay/uc_boyutlu/silindir_adim_3.webp"
       ]
     },
     {
@@ -270,9 +270,9 @@
       "renk": "#7CC6E8",
       "oran": 1.0,
       "adimlar": [
-        "geometrik/uc_boyutlu/koni_adim_1.webp",
-        "geometrik/uc_boyutlu/koni_adim_2.webp",
-        "geometrik/uc_boyutlu/koni_adim_3.webp"
+        "kolay/uc_boyutlu/koni_adim_1.webp",
+        "kolay/uc_boyutlu/koni_adim_2.webp",
+        "kolay/uc_boyutlu/koni_adim_3.webp"
       ]
     },
     {
@@ -282,9 +282,9 @@
       "renk": "#7CC6E8",
       "oran": 1.0,
       "adimlar": [
-        "geometrik/uc_boyutlu/kure_adim_1.webp",
-        "geometrik/uc_boyutlu/kure_adim_2.webp",
-        "geometrik/uc_boyutlu/kure_adim_3.webp"
+        "kolay/uc_boyutlu/kure_adim_1.webp",
+        "kolay/uc_boyutlu/kure_adim_2.webp",
+        "kolay/uc_boyutlu/kure_adim_3.webp"
       ]
     },
     {
@@ -294,9 +294,9 @@
       "renk": "#7CC6E8",
       "oran": 1.0,
       "adimlar": [
-        "geometrik/uc_boyutlu/piramit_adim_1.webp",
-        "geometrik/uc_boyutlu/piramit_adim_2.webp",
-        "geometrik/uc_boyutlu/piramit_adim_3.webp"
+        "kolay/uc_boyutlu/piramit_adim_1.webp",
+        "kolay/uc_boyutlu/piramit_adim_2.webp",
+        "kolay/uc_boyutlu/piramit_adim_3.webp"
       ]
     },
     {
@@ -306,8 +306,8 @@
       "renk": "#FF8FB1",
       "oran": 1.7699,
       "adimlar": [
-        "anatomi/eller/el_1_adim_1.webp",
-        "anatomi/eller/el_1_adim_2.webp"
+        "insan/eller/el_1_adim_1.webp",
+        "insan/eller/el_1_adim_2.webp"
       ]
     },
     {
@@ -317,8 +317,8 @@
       "renk": "#FF8FB1",
       "oran": 1.7755,
       "adimlar": [
-        "anatomi/eller/el_2_adim_1.webp",
-        "anatomi/eller/el_2_adim_2.webp"
+        "insan/eller/el_2_adim_1.webp",
+        "insan/eller/el_2_adim_2.webp"
       ]
     },
     {
@@ -328,10 +328,10 @@
       "renk": "#FF8FB1",
       "oran": 1.4311,
       "adimlar": [
-        "anatomi/eller/el_3_adim_1.webp",
-        "anatomi/eller/el_3_adim_2.webp",
-        "anatomi/eller/el_3_adim_3.webp",
-        "anatomi/eller/el_3_adim_4.webp"
+        "insan/eller/el_3_adim_1.webp",
+        "insan/eller/el_3_adim_2.webp",
+        "insan/eller/el_3_adim_3.webp",
+        "insan/eller/el_3_adim_4.webp"
       ]
     },
     {
@@ -341,10 +341,10 @@
       "renk": "#7CC6E8",
       "oran": 0.783,
       "adimlar": [
-        "anatomi/gozler/goz_onden_1.webp",
-        "anatomi/gozler/goz_onden_2.webp",
-        "anatomi/gozler/goz_onden_3.webp",
-        "anatomi/gozler/goz_onden_4.webp"
+        "insan/gozler/goz_onden_1.webp",
+        "insan/gozler/goz_onden_2.webp",
+        "insan/gozler/goz_onden_3.webp",
+        "insan/gozler/goz_onden_4.webp"
       ]
     },
     {
@@ -354,10 +354,10 @@
       "renk": "#7CC6E8",
       "oran": 0.8218,
       "adimlar": [
-        "anatomi/gozler/goz_capraz_1.webp",
-        "anatomi/gozler/goz_capraz_2.webp",
-        "anatomi/gozler/goz_capraz_3.webp",
-        "anatomi/gozler/goz_capraz_4.webp"
+        "insan/gozler/goz_capraz_1.webp",
+        "insan/gozler/goz_capraz_2.webp",
+        "insan/gozler/goz_capraz_3.webp",
+        "insan/gozler/goz_capraz_4.webp"
       ]
     },
     {
@@ -367,10 +367,10 @@
       "renk": "#7CC6E8",
       "oran": 0.9335,
       "adimlar": [
-        "anatomi/gozler/goz_yandan_1.webp",
-        "anatomi/gozler/goz_yandan_2.webp",
-        "anatomi/gozler/goz_yandan_3.webp",
-        "anatomi/gozler/goz_yandan_4.webp"
+        "insan/gozler/goz_yandan_1.webp",
+        "insan/gozler/goz_yandan_2.webp",
+        "insan/gozler/goz_yandan_3.webp",
+        "insan/gozler/goz_yandan_4.webp"
       ]
     },
     {
@@ -380,10 +380,10 @@
       "renk": "#6FD3A0",
       "oran": 1.5599,
       "adimlar": [
-        "anatomi/burunlar/burun_1.webp",
-        "anatomi/burunlar/burun_2.webp",
-        "anatomi/burunlar/burun_3.webp",
-        "anatomi/burunlar/burun_4.webp"
+        "insan/burunlar/burun_1.webp",
+        "insan/burunlar/burun_2.webp",
+        "insan/burunlar/burun_3.webp",
+        "insan/burunlar/burun_4.webp"
       ]
     },
     {
@@ -393,8 +393,8 @@
       "renk": "#FFCC4D",
       "oran": 0.6153,
       "adimlar": [
-        "anatomi/dudaklar/dudak_1_adim_1.webp",
-        "anatomi/dudaklar/dudak_1_adim_2.webp"
+        "insan/dudaklar/dudak_1_adim_1.webp",
+        "insan/dudaklar/dudak_1_adim_2.webp"
       ]
     },
     {
@@ -404,8 +404,8 @@
       "renk": "#FFCC4D",
       "oran": 0.5697,
       "adimlar": [
-        "anatomi/dudaklar/dudak_2_adim_1.webp",
-        "anatomi/dudaklar/dudak_2_adim_2.webp"
+        "insan/dudaklar/dudak_2_adim_1.webp",
+        "insan/dudaklar/dudak_2_adim_2.webp"
       ]
     },
     {
@@ -415,8 +415,8 @@
       "renk": "#FFCC4D",
       "oran": 0.6798,
       "adimlar": [
-        "anatomi/dudaklar/dudak_3_adim_1.webp",
-        "anatomi/dudaklar/dudak_3_adim_2.webp"
+        "insan/dudaklar/dudak_3_adim_1.webp",
+        "insan/dudaklar/dudak_3_adim_2.webp"
       ]
     },
     {
@@ -426,10 +426,10 @@
       "renk": "#B59CFF",
       "oran": 1.3599,
       "adimlar": [
-        "anatomi/yuzler/erkek_yuzu_1.webp",
-        "anatomi/yuzler/erkek_yuzu_2.webp",
-        "anatomi/yuzler/erkek_yuzu_3.webp",
-        "anatomi/yuzler/erkek_yuzu_4.webp"
+        "insan/yuzler/erkek_yuzu_1.webp",
+        "insan/yuzler/erkek_yuzu_2.webp",
+        "insan/yuzler/erkek_yuzu_3.webp",
+        "insan/yuzler/erkek_yuzu_4.webp"
       ]
     },
     {
@@ -439,10 +439,10 @@
       "renk": "#B59CFF",
       "oran": 1.4778,
       "adimlar": [
-        "anatomi/yuzler/kiz_yuzu_1.webp",
-        "anatomi/yuzler/kiz_yuzu_2.webp",
-        "anatomi/yuzler/kiz_yuzu_3.webp",
-        "anatomi/yuzler/kiz_yuzu_4.webp"
+        "insan/yuzler/kiz_yuzu_1.webp",
+        "insan/yuzler/kiz_yuzu_2.webp",
+        "insan/yuzler/kiz_yuzu_3.webp",
+        "insan/yuzler/kiz_yuzu_4.webp"
       ]
     },
     {
@@ -452,10 +452,10 @@
       "renk": "#B59CFF",
       "oran": 1.5373,
       "adimlar": [
-        "anatomi/portreler/futbolcu_portresi_1.webp",
-        "anatomi/portreler/futbolcu_portresi_2.webp",
-        "anatomi/portreler/futbolcu_portresi_3.webp",
-        "anatomi/portreler/futbolcu_portresi_4.webp"
+        "insan/portreler/futbolcu_portresi_1.webp",
+        "insan/portreler/futbolcu_portresi_2.webp",
+        "insan/portreler/futbolcu_portresi_3.webp",
+        "insan/portreler/futbolcu_portresi_4.webp"
       ]
     }
   ],

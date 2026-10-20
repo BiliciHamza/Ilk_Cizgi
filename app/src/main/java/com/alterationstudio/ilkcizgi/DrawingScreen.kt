@@ -1122,12 +1122,10 @@ fun DrawingScreen(
                                     }
                                 }
                             }
-                            TOOL_SENSE -> ToolControl(lang.pick(
-                                "Algılama hassasiyeti: ${(handSensitivity * 10).roundToInt()}",
-                                "Detection sensitivity: ${(handSensitivity * 10).roundToInt()}")) {
+                            TOOL_SENSE -> ToolControl(lang.pick("Algılama hassasiyeti", "Detection sensitivity")) {
                                 Text(
-                                    lang.pick("El önde, Çizdiklerimi gizle ve yüzde için. 0 önerilir; artırınca gölgeler de el sayılır, sadece koyu çizgiler fark edilir.",
-                                        "For Hand in front, Hide my lines and the percentage. 0 is recommended; higher values treat shadows as hand and only notice dark lines."),
+                                    lang.pick("El önde, Çizdiklerimi gizle ve yüzde için. En sol önerilir: açık kalem izleri de sayılır, gölgeler el sanılmaz.",
+                                        "For Hand in front, Hide my lines and the percentage. Far left is recommended: light pencil marks count and shadows aren't mistaken for your hand."),
                                     color = Ui.Muted, fontSize = 12.sp, lineHeight = 16.sp
                                 )
                                 Slider(
@@ -1137,21 +1135,28 @@ fun DrawingScreen(
                                     steps = SENSITIVITY_STEPS,
                                     colors = sliderColors()
                                 )
-                                // Önerilen değer: dokununca 0'a döner
-                                Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                                // İki uçta ne yaptığı yazar; sol uç önerilen değerdir, dokununca oraya döner
+                                Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.Top) {
                                     val atRecommended = handSensitivity == SENSITIVITY_RECOMMENDED
                                     Text(
-                                        lang.pick("0 · önerilen", "0 · recommended"),
+                                        lang.pick("Açık kalem izlerini de say (önerilen)", "Count light pencil marks (recommended)"),
                                         color = if (atRecommended) Ui.Accent else Color.White,
-                                        fontSize = 12.sp, fontWeight = FontWeight.Bold,
+                                        fontSize = 12.sp, lineHeight = 15.sp, fontWeight = FontWeight.Bold,
                                         modifier = Modifier
-                                            .clip(RoundedCornerShape(50))
+                                            .weight(1f)
+                                            .clip(RoundedCornerShape(10.dp))
                                             .background(Color.White.copy(alpha = if (atRecommended) 0f else 0.12f))
                                             .clickable { handSensitivity = SENSITIVITY_RECOMMENDED }
-                                            .padding(horizontal = 10.dp, vertical = 4.dp)
+                                            .padding(horizontal = 8.dp, vertical = 4.dp)
                                     )
-                                    Spacer(Modifier.weight(1f))
-                                    Text("10", color = Ui.Muted, fontSize = 12.sp, modifier = Modifier.padding(end = 6.dp))
+                                    Spacer(Modifier.width(12.dp))
+                                    Text(
+                                        lang.pick("Gölgeleri de el say", "Treat shadows as hand"),
+                                        color = Ui.Muted, fontSize = 12.sp, lineHeight = 15.sp, textAlign = TextAlign.End,
+                                        modifier = Modifier
+                                            .weight(1f)
+                                            .padding(horizontal = 6.dp, vertical = 4.dp)
+                                    )
                                 }
                             }
                         }

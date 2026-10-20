@@ -46,6 +46,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.delay
 import kotlin.math.roundToInt
@@ -181,16 +182,15 @@ fun SettingsScreen(lang: Lang, onLangChange: (Lang) -> Unit, onShowIntro: () -> 
                 SettingSwitch(L("Çizdiklerimi gizle", "Hide what I've drawn"),
                     L("Çizdiğin yerlerde kılavuz kaybolur", "The guide disappears where you've drawn"),
                     prefs.hideDrawn) { update(prefs.copy(hideDrawn = it)) }
-                // Algılama hassasiyeti: önerilen ve varsayılan 0
+                // Algılama hassasiyeti: önerilen ve varsayılan en sol (0)
                 Spacer(Modifier.height(6.dp))
                 Text(
-                    L("Algılama hassasiyeti: ${(prefs.sensitivity * 10).roundToInt()}",
-                        "Detection sensitivity: ${(prefs.sensitivity * 10).roundToInt()}"),
+                    L("Algılama hassasiyeti", "Detection sensitivity"),
                     color = Ui.Ink, fontSize = 15.sp, fontWeight = FontWeight.Medium
                 )
                 Text(
-                    L("El önde, Çizdiklerimi gizle ve yüzde için. 0 önerilir: açık kalem izleri de yakalanır, gölgeler el sanılmaz. Artırınca gölgeler de el sayılır, sadece koyu çizgiler fark edilir.",
-                        "For Hand in front, Hide what I've drawn and the percentage. 0 is recommended: light pencil marks are caught and shadows aren't mistaken for your hand. Higher values treat shadows as hand and only notice dark lines."),
+                    L("El önde, Çizdiklerimi gizle ve yüzde için. En sol önerilir: açık kalem izleri de sayılır, gölgeler el sanılmaz. Sağa gittikçe gölgeler de el sayılır, sadece koyu çizgiler fark edilir.",
+                        "For Hand in front, Hide what I've drawn and the percentage. Far left is recommended: light pencil marks count and shadows aren't mistaken for your hand. Further right treats shadows as hand and only notices dark lines."),
                     color = Ui.InkMuted, fontSize = 12.sp, lineHeight = 16.sp
                 )
                 Slider(
@@ -205,20 +205,28 @@ fun SettingsScreen(lang: Lang, onLangChange: (Lang) -> Unit, onShowIntro: () -> 
                         inactiveTrackColor = Ui.tint(Ui.Mint, 0.4f)
                     )
                 )
-                Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                // İki uçta ne yaptığı yazar; sol uç önerilen değerdir, dokununca oraya döner
+                Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.Top) {
                     val atRecommended = prefs.sensitivity == SENSITIVITY_RECOMMENDED
                     Text(
-                        L("0 · önerilen", "0 · recommended"),
-                        color = Ui.deep(Ui.Mint, 0.45f), fontSize = 12.sp, fontWeight = FontWeight.Bold,
+                        L("Açık kalem izlerini de say (önerilen)", "Count light pencil marks (recommended)"),
+                        color = Ui.deep(Ui.Mint, 0.45f), fontSize = 12.sp, lineHeight = 15.sp, fontWeight = FontWeight.Bold,
                         modifier = Modifier
-                            .clip(RoundedCornerShape(50))
+                            .weight(1f)
+                            .clip(RoundedCornerShape(10.dp))
                             .background(if (atRecommended) Ui.tint(Ui.Mint, 0.5f) else Color.Transparent)
-                            .border(1.dp, Ui.tint(Ui.Mint, 0.8f), RoundedCornerShape(50))
+                            .border(1.dp, Ui.tint(Ui.Mint, 0.8f), RoundedCornerShape(10.dp))
                             .clickable { update(prefs.copy(sensitivity = SENSITIVITY_RECOMMENDED)) }
-                            .padding(horizontal = 10.dp, vertical = 4.dp)
+                            .padding(horizontal = 8.dp, vertical = 4.dp)
                     )
-                    Spacer(Modifier.weight(1f))
-                    Text("10", color = Ui.InkMuted, fontSize = 12.sp)
+                    Spacer(Modifier.width(12.dp))
+                    Text(
+                        L("Gölgeleri de el say", "Treat shadows as hand"),
+                        color = Ui.InkMuted, fontSize = 12.sp, lineHeight = 15.sp, textAlign = TextAlign.End,
+                        modifier = Modifier
+                            .weight(1f)
+                            .padding(horizontal = 6.dp, vertical = 4.dp)
+                    )
                 }
                 Spacer(Modifier.height(4.dp))
                 SettingSwitch(L("Izgara", "Grid"),

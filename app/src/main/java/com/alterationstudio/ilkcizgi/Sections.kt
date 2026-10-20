@@ -43,17 +43,19 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
 /*
- * ANA SAYFADAN AÇILAN SADE EKRANLAR
- * Çizmeyi öğren, Son açtıkların, Favorilerim, Fotoğraflarım.
- * Hepsinde sol üstte ana sayfaya dönmek için geri tuşu var.
+ * BÖLÜM EKRANLARI
+ * Ana sayfadan açılanlar: Çizmeyi öğren (dersler), Kategoriler, Arama (sol üstte geri tuşu).
+ * Kısayollar sekmesinin listeleri: Son açtıkların, Favorilerim, Fotoğraflarım.
  */
 
+// Ana sayfadan açılan ekranlar
 const val SECTION_LESSONS = "dersler"
+const val SECTION_SEARCH = "ara"
+const val SECTION_CATEGORIES = "kategoriler"
+// Kısayollar sekmesindeki listeler
 const val SECTION_RECENT = "son"
 const val SECTION_FAVORITES = "favoriler"
 const val SECTION_PHOTOS = "fotograflar"
-const val SECTION_SEARCH = "ara"
-const val SECTION_CATEGORIES = "kategoriler"
 
 /** Sade üst başlık: sol üstte geri tuşu, yanında başlık ve kısa açıklama (Nasıl kullanılır da kullanır) */
 @Composable
@@ -125,102 +127,6 @@ fun LessonsScreen(lessons: List<Lesson>, onBack: () -> Unit, onOpenLesson: (Less
                 LessonCard(l, Modifier.fillMaxWidth()) { onOpenLesson(l) }
             }
         }
-    }
-}
-
-/**
- * Son açtıkların, Favorilerim ya da Fotoğraflarım.
- * Fotoğraflarım'da bir çizime uzun basınca silinebilir.
- * Son açtıkların'dan açılan çizim en son bırakıldığı ayarlarla gelir (onOpenRecent).
- */
-@Composable
-fun CollectionScreen(
-    section: String,
-    lookup: (String) -> Pair<CatalogItem, Color>?,
-    onBack: () -> Unit,
-    onOpenDrawing: (String) -> Unit,
-    onOpenRecent: (String) -> Unit,
-    onPreview: (path: String, fromRecent: Boolean) -> Unit
-) {
-    val context = LocalContext.current
-    var toDelete by remember { mutableStateOf<CatalogItem?>(null) }
-
-    val (title, subtitle, color) = when (section) {
-        SECTION_FAVORITES -> Triple(
-            L("Favorilerim", "Favourites"),
-            L("Çizimlerdeki ♡ ile eklediklerin", "Drawings you saved with ♡"), Ui.Rose
-        )
-        SECTION_PHOTOS -> Triple(
-            L("Fotoğraflarım", "My photos"),
-            L("Fotoğraftan yaptığın çizimler · silmek için uzun bas", "Drawings made from your photos · long-press to delete"),
-            Ui.Sun
-        )
-        else -> Triple(
-            L("Son açtıkların", "Recently opened"),
-            L("En son açtığın çizim en başta", "Most recent first"), Ui.Accent
-        )
-    }
-    val list: List<Pair<CatalogItem, Color>> = when (section) {
-        SECTION_FAVORITES -> Library.favorites.mapNotNull(lookup)
-        SECTION_PHOTOS -> UserSketches.items.map { it to Ui.Rose }
-        else -> Library.recents.mapNotNull(lookup)
-    }
-
-    Column(
-        Modifier
-            .fillMaxSize()
-            .background(Ui.Paper)
-    ) {
-        SectionHeader(title, subtitle, color, onBack)
-        if (list.isEmpty()) {
-            EmptyNote(
-                when (section) {
-                    SECTION_FAVORITES -> L("Henüz favorin yok. Beğendiğin çizimin köşesindeki ♡'e dokun.",
-                        "No favourites yet. Tap the ♡ on a drawing you like.")
-                    SECTION_PHOTOS -> L("Henüz fotoğraftan çizim yapmadın. Ana sayfadaki \"Kendi fotoğraflarını çizime dönüştür\" ile başla.",
-                        "You haven't made a drawing from a photo yet. Start with \"Turn your photos into drawings\" on the home screen.")
-                    else -> L("Henüz bir çizim açmadın. Açtığın çizimler burada görünür.",
-                        "You haven't opened a drawing yet. Drawings you open show up here.")
-                }
-            )
-        } else {
-            LazyVerticalGrid(
-                columns = GridCells.Adaptive(minSize = 150.dp),
-                contentPadding = PaddingValues(start = 20.dp, end = 20.dp, top = 8.dp, bottom = 24.dp),
-                horizontalArrangement = Arrangement.spacedBy(14.dp),
-                verticalArrangement = Arrangement.spacedBy(14.dp),
-                modifier = Modifier
-                    .weight(1f)
-                    .navigationBarsPadding()
-            ) {
-                items(list, key = { it.first.path }) { (item, c) ->
-                    DrawingTile(
-                        item = item,
-                        color = c,
-                        onLongClick = if (section == SECTION_PHOTOS) ({ toDelete = item }) else null,
-                        onPreview = { onPreview(item.path, section == SECTION_RECENT) },
-                        onClick = { if (section == SECTION_RECENT) onOpenRecent(item.path) else onOpenDrawing(item.path) }
-                    )
-                }
-            }
-        }
-    }
-
-    toDelete?.let { item ->
-        AlertDialog(
-            onDismissRequest = { toDelete = null },
-            title = { Text(L("Silinsin mi?", "Delete it?")) },
-            text = {
-                Text(L("\"${item.name}\" çizimi silinecek. Bu geri alınamaz.",
-                    "\"${item.nameEn}\" will be deleted. This can't be undone."))
-            },
-            confirmButton = {
-                TextButton(onClick = { UserSketches.delete(context, item); toDelete = null }) {
-                    Text(L("Sil", "Delete"), color = Ui.Danger)
-                }
-            },
-            dismissButton = { TextButton(onClick = { toDelete = null }) { Text(L("Vazgeç", "Cancel")) } }
-        )
     }
 }
 

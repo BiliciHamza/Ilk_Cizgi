@@ -118,4 +118,4 @@ app/src/main/
 ## Geliştiriciler
 Hamza Bilici - Emel Ece Gizli
 
-
+© 2026 Alteration Studio

@@ -138,7 +138,7 @@ fun AppRoot() {
     var drawingPath by rememberSaveable { mutableStateOf<String?>(null) }
     var photoFlow by rememberSaveable { mutableStateOf(false) }
     var lessonId by rememberSaveable { mutableStateOf<String?>(null) }
-    // Ana sayfadan açılan sade ekran: dersler, son açtıkların, favoriler, fotoğraflarım
+    // Ana sayfadan açılan ekran: dersler, kategoriler, arama
     var homeSection by rememberSaveable { mutableStateOf<String?>(null) }
     // İlk açılışta tanıtım (Ayarlar'dan tekrar açılabilir)
     var showIntro by rememberSaveable { mutableStateOf(!Settings.introSeen(context)) }
@@ -364,20 +364,6 @@ fun AppRoot() {
                         onBack = closeSearch,
                         onOpenDrawing = { openDrawing(it) },
                         onPreviewDrawing = { openPreview(it, false) }
-                    )
-                }
-            }
-            homeSection != null -> {
-                BackHandler { homeSection = null }
-                val sec = homeSection ?: SECTION_RECENT
-                screens.SaveableStateProvider("bolum:$sec") {
-                    CollectionScreen(
-                        section = sec,
-                        lookup = lookup,
-                        onBack = { homeSection = null },
-                        onOpenDrawing = { openDrawing(it) },
-                        onOpenRecent = { openRecent(it) },
-                        onPreview = { p, recent -> openPreview(p, recent) }
                     )
                 }
             }
